@@ -1,0 +1,36 @@
+﻿<view class="container">
+  <view class="status-bar">
+    <view class="status-badge {{isActive ? 'active' : 'inactive'}}">{{isActive ? '抽奖进行中' : '暂未开启'}}</view>
+    <text class="prize-title" wx:if="{{currentPrize}}">当前奖项：{{currentPrize.name || currentPrize}}</text>
+  </view>
+
+  <view class="stats">
+    <view class="stat-item">
+      <text class="stat-num">{{poolCount}}</text>
+      <text class="stat-label">候选人数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num highlight">{{winnersCount}}</text>
+      <text class="stat-label">已中奖</text>
+    </view>
+  </view>
+
+  <view class="winners-section">
+    <text class="section-title">中奖名单</text>
+    <view class="winner-list" wx:if="{{winners.length > 0}}">
+      <view class="winner-row" wx:for="{{winners}}" wx:key="id">
+        <view class="winner-info">
+          <text class="winner-name">{{item.name}}</text>
+          <text class="winner-dept" wx:if="{{item.dept}}">{{item.dept}}</text>
+        </view>
+        <view class="winner-prize">
+          <text class="prize-name">{{item.prize.name || item.prize}}</text>
+          <text class="prize-msg" wx:if="{{item.message}}">{{item.message}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty" wx:else>
+      <text>等待开奖...</text>
+    </view>
+  </view>
+</view>

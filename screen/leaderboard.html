@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>答题排行榜 - 大屏展示</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+  <div class="leaderboard">
+    <h2>🏆 答题排行榜</h2>
+    <p style="color:#8892b0;font-size:20px;margin-bottom:30px;">扫码参与年会答题，PK 争霸！</p>
+    <div id="rankList"></div>
+  </div>
+  <script src="js/common.js"></script>
+<script>
+function loadRanks() {
+  get('/game/ranks').then(res => {
+    if (res.code !== 0) return;
+    const ranks = res.data || [];
+    const list = $('#rankList');
+    list.innerHTML = ranks.map((r, i) =>
+      '<div class="rank-item' + (i < 3 ? ' top' : '') + '">' +
+      '<span class="rank-num">' + (['🥇','🥈','🥉'][i] || (i+1)) + '</span>' +
+      '<span class="rank-name">' + esc(r.name) + '</span>' +
+      '<span class="rank-score">' + r.score + ' 分</span>' +
+      '</div>'
+    ).join('');
+    if (ranks.length === 0) {
+      list.innerHTML = '<p style="color:#8892b0;font-size:24px;padding:40px;">等待第一位挑战者...</p>';
+    }
+  });
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+loadRanks();
+setInterval(loadRanks, 5000);
+</script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io();
+socket.on('game:ranksUpdated', function(){ loadRanks(); });
+</script>
+
+<div class="qr-code" style="position:fixed;bottom:20px;left:20px;z-index:100;text-align:center;cursor:grab;user-select:none;" id="qrBox">
+  <img class="qr-img" src="" alt="扫码参与" style="width:100px;height:100px;background:#fff;border-radius:10px;padding:4px;">
+  <p style="color:#8892b0;font-size:12px;margin-top:4px;">微信扫一扫</p>
+</div>
+<script>
+(function(){
+  var img = document.querySelector('.qr-img');
+  if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
+})();
+// ---- 拖拽二维码 ----
+(function(){
+  var box = document.getElementById('qrBox');
+  if (!box) return;
+  var dragging = false, startX, startY, startLeft, startTop;
+  function onStart(e) {
+    e.preventDefault();
+    dragging = true;
+    box.style.cursor = 'grabbing';
+    var t = e.touches ? e.touches[0] : e;
+    startX = t.clientX;
+    startY = t.clientY;
+    var rect = box.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop = rect.top;
+    // 拖拽开始时把 bottom 清掉，改用 top 定位
+    box.style.bottom = 'auto';
+    box.style.right = 'auto';
+    box.style.left = startLeft + 'px';
+    box.style.top = startTop + 'px';
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    var t = e.touches ? e.touches[0] : e;
+    var dx = t.clientX - startX;
+    var dy = t.clientY - startY;
+    box.style.left = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
+    box.style.top = Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
+    box.style.bottom = 'auto';
+  }
+  function onEnd() {
+    dragging = false;
+    box.style.cursor = 'grab';
+  }
+  box.addEventListener('mousedown', onStart);
+  box.addEventListener('touchstart', onStart, { passive: false });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchend', onEnd);
+})();
+</script>
+</body>
+</html>

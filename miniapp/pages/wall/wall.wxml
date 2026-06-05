@@ -1,0 +1,47 @@
+﻿<view class="container">
+  <view class="card" style="display:flex;gap:16rpx;">
+    <view class="btn {{tab==='wall'?'btn-primary':'btn'}}" data-tab="wall" bindtap="switchTab">💬 留言墙</view>
+    <view class="btn {{tab==='lottery'?'btn-primary':'btn'}}" data-tab="lottery" bindtap="switchTab">🎰 抽奖</view>
+  </view>
+
+  <block wx:if="{{tab==='wall'}}">
+    <view class="card"><view class="card-title">发送你的祝福</view>
+      <input class="input" placeholder="你的昵称" value="{{msgNick}}" bindinput="onNickInput" style="margin-bottom:12rpx;"/>
+      <textarea class="textarea" placeholder="写下你的新年祝福或心愿..." value="{{msgText}}" bindinput="onMsgInput" maxlength="200"/>
+      <view style="text-align:right;color:#9ca3af;font-size:22rpx;">{{msgText.length}}/200</view>
+      <button class="btn btn-primary" style="width:100%;margin-top:12rpx;" bindtap="sendMessage" loading="{{sending}}">🚀 发送到留言墙</button>
+    </view>
+
+    <view class="card-title" style="padding-left:20rpx;">💬 实时留言 ({{messages.length}})</view>
+    <view wx:for="{{messages}}" wx:key="id" class="card">
+      <view style="display:flex;justify-content:space-between;align-items:center;">
+        <text style="font-weight:600;color:#4f46e5;">{{item.nickname}}</text>
+        <text style="font-size:22rpx;color:#9ca3af;">{{item.time}}</text>
+      </view>
+      <view style="margin-top:8rpx;font-size:28rpx;line-height:1.5;">{{item.text}}</view>
+      <view style="display:flex;justify-content:flex-end;margin-top:8rpx;" bindtap="likeMsg" data-id="{{item.id}}">
+        <text style="color:#ef4444;font-size:24rpx;">❤ {{item.likes || 0}}</text>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{tab==='lottery'}}">
+    <view class="card"><view class="card-title">🎰 抽奖状态</view>
+      <view style="display:flex;gap:30rpx;text-align:center;">
+        <view style="flex:1;"><text style="font-size:48rpx;font-weight:700;color:#4f46e5;">{{lotteryState.poolCount || 0}}</text><view style="color:#9ca3af;font-size:24rpx;">候选</view></view>
+        <view style="flex:1;"><text style="font-size:48rpx;font-weight:700;color:#10b981;">{{lotteryState.winnersCount || 0}}</text><view style="color:#9ca3af;font-size:24rpx;">已中奖</view></view>
+        <view style="flex:1;"><text style="font-size:36rpx;font-weight:700;color:{{lotteryState.isActive?'#ef4444':'#9ca3af'}};">{{lotteryState.isActive?'进行中':'未开始'}}</text></view>
+      </view>
+    </view>
+
+    <view class="card-title" style="padding-left:20rpx;">🏆 中奖名单</view>
+    <view wx:if="{{winners.length===0}}" style="text-align:center;padding:60rpx;color:#9ca3af;">等待开奖...</view>
+    <view wx:for="{{winners}}" wx:key="id" class="card" style="display:flex;align-items:center;gap:16rpx;">
+      <text style="font-size:40rpx;">🎉</text>
+      <view style="flex:1;">
+        <text style="font-weight:600;font-size:28rpx;">{{item.name}}</text>
+        <text style="color:#f59e0b;font-size:24rpx;"> {{item.prize.name || item.prize}}</text>
+      </view>
+    </view>
+  </block>
+</view>

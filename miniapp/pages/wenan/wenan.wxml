@@ -1,0 +1,66 @@
+﻿<view class="container">
+  <view class="card" style="display:flex;gap:16rpx;">
+    <view class="btn {{mode==='wenan'?'btn-primary':'btn'}}" data-mode="wenan" bindtap="switchMode">📝 文案</view>
+    <view class="btn {{mode==='script'?'btn-primary':'btn'}}" data-mode="script" bindtap="switchMode">🎭 剧本</view>
+    <view class="btn {{mode==='lyrics'?'btn-primary':'btn'}}" data-mode="lyrics" bindtap="switchMode">🎵 改歌词</view>
+  </view>
+
+  <block wx:if="{{mode==='wenan'}}">
+    <view class="card"><view class="card-title">选择文案类型</view>
+      <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+        <view class="tag" wx:for="{{wenanTypes}}" wx:key="*this"
+          style="background:{{wenanType===item?'#4f46e5':'#f3f4f6'}};color:{{wenanType===item?'#fff':'#666'}};"
+          data-value="{{item}}" bindtap="selectType">{{item}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{mode==='script'}}">
+    <view class="card"><view class="card-title">选择节目类型</view>
+      <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+        <view class="tag" wx:for="{{scriptTypes}}" wx:key="*this"
+          style="background:{{scriptType===item?'#4f46e5':'#f3f4f6'}};color:{{scriptType===item?'#fff':'#666'}};"
+          data-value="{{item}}" bindtap="selectScript">{{item}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{mode!=='lyrics'}}">
+    <view class="card"><view class="card-title">选择风格</view>
+      <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+        <view class="tag" wx:for="{{styles}}" wx:key="*this"
+          style="background:{{style===item?'#f59e0b':'#f3f4f6'}};color:{{style===item?'#fff':'#666'}};"
+          data-value="{{item}}" bindtap="selectStyle">{{item}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{mode==='lyrics'}}">
+    <view class="card"><view class="card-title">原歌曲名</view>
+      <input class="input" placeholder="例如：恭喜发财" value="{{song}}" bindinput="onSongInput"/>
+    </view>
+  </block>
+
+  <view class="card"><view class="card-title">主题（选填）</view>
+    <input class="input" placeholder="如：2026年会开场、技术部团建" value="{{topic}}" bindinput="onTopicInput"/>
+  </view>
+
+  <block wx:if="{{mode!=='lyrics'}}">
+    <view class="card"><view class="card-title">字数：{{wordCount}}</view>
+      <slider min="100" max="2000" value="{{wordCount}}" bindchange="onWordCount" show-value block-size="20"/>
+    </view>
+  </block>
+
+  <view style="display:flex;gap:16rpx;padding:0 20rpx;">
+    <button class="btn btn-primary" style="flex:1;" bindtap="doGenerate" loading="{{loading}}">✨ AI 生成</button>
+  </view>
+
+  <view wx:if="{{showResult}}" class="card" style="margin-top:20rpx;">
+    <view class="card-title">生成结果</view>
+    <view class="result-box">{{result}}</view>
+    <view style="display:flex;gap:16rpx;margin-top:16rpx;">
+      <button class="btn btn-success" style="flex:1;" bindtap="copyResult">📋 复制</button>
+      <button class="btn btn-warning" style="flex:1;" bindtap="doRewrite">🔄 改写</button>
+    </view>
+  </view>
+</view>

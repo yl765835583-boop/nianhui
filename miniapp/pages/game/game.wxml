@@ -1,0 +1,150 @@
+<view class="container">
+  <scroll-view scroll-x class="tab-bar">
+    <view class="btn {{tab==='quiz'?'btn-primary':'btn'}}" data-tab="quiz" bindtap="switchTab" style="flex-shrink:0;">🧠 答题</view>
+    <view class="btn {{tab==='idiom'?'btn-primary':'btn'}}" data-tab="idiom" bindtap="switchTab" style="flex-shrink:0;">🔤 接龙</view>
+    <view class="btn {{tab==='feihua'?'btn-primary':'btn'}}" data-tab="feihua" bindtap="switchTab" style="flex-shrink:0;">🌸 飞花令</view>
+    <view class="btn {{tab==='voice'?'btn-primary':'btn'}}" data-tab="voice" bindtap="switchTab" style="flex-shrink:0;">🎙 变声</view>
+    <view class="btn {{tab==='video'?'btn-primary':'btn'}}" data-tab="video" bindtap="switchTab" style="flex-shrink:0;">🎬 视频</view>
+    <view class="btn {{tab==='music'?'btn-primary':'btn'}}" data-tab="music" bindtap="switchTab" style="flex-shrink:0;">🎵 音乐</view>
+  </scroll-view>
+
+  <!-- 答题 -->
+  <block wx:if="{{tab==='quiz'}}">
+    <view wx:if="{{!quizStarted}}">
+      <view class="card"><view class="card-title">选择题目类型</view>
+        <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+          <view class="tag" wx:for="{{quizTypes}}" wx:key="*this" style="font-size:26rpx;"
+            data-value="{{item}}" bindtap="selectQuizType"
+            style="background:{{quizType===item?'#4f46e5':'#f3f4f6'}};color:{{quizType===item?'#fff':'#666'}};">{{item}}</view>
+        </view>
+      </view>
+
+      <view class="card"><view class="card-title">难度选择</view>
+        <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+          <view class="tag" wx:for="{{difficulties}}" wx:key="*this" style="font-size:26rpx;"
+            data-value="{{item}}" bindtap="selectDifficulty"
+            style="background:{{difficulty===item?'#f59e0b':'#f3f4f6'}};color:{{difficulty===item?'#fff':'#666'}};">{{diffLabels[item]}}</view>
+        </view>
+      </view>
+
+      <view class="card"><view class="card-title">比赛模式</view>
+        <view style="display:flex;align-items:center;gap:12rpx;">
+          <switch checked="{{teamMode}}" bindchange="toggleTeamMode"/>
+          <text>{{teamMode ? "👥 组队PK" : "👤 单人答题"}}</text>
+        </view>
+        <input wx:if="{{teamMode}}" class="input" placeholder="输入队名" value="{{teamName}}" bindinput="onTeamName" style="margin-top:8rpx;"/>
+      </view>
+
+      <view style="padding:0 20rpx;">
+        <button class="btn btn-primary" style="width:100%;" bindtap="startQuiz">🚀 开始答题</button>
+      </view>
+    </view>
+
+    <view wx:if="{{quizStarted && !quizSubmitted}}">
+      <view class="card" wx:for="{{quiz}}" wx:key="index" wx:for-index="idx">
+        <view class="card-title">{{idx+1}}. {{item.question}}</view>
+        <view wx:for="{{item.options}}" wx:key="*this" wx:for-item="opt" wx:for-index="oi">
+          <view class="option {{quizAnswers[idx]==='ABCD'[oi]?'option-selected':''}}"
+            data-idx="{{idx}}" data-opt="{{'ABCD'[oi]}}" bindtap="selectAnswer">
+            {{'ABCD'[oi]}}. {{opt}}
+          </view>
+        </view>
+      </view>
+      <view style="padding:0 20rpx;">
+        <button class="btn btn-success" style="width:100%;" bindtap="submitQuiz" loading="{{loading}}">✅ 提交答案</button>
+      </view>
+    </view>
+
+    <view wx:if="{{quizSubmitted}}" class="card" style="text-align:center;">
+      <text style="font-size:64rpx;">🎉</text>
+      <view style="font-size:40rpx;font-weight:700;margin:16rpx 0;">得分：{{quizScore}} / {{quiz.length}}</view>
+      <view style="color:#8892b0;">{{quizComment}}</view>
+      <button class="btn btn-primary" style="margin-top:20rpx;" bindtap="startQuiz">再来一局</button>
+    </view>
+
+    <view class="card" style="margin-top:20rpx;">
+      <view class="card-title">🏆 排行榜
+        <text style="font-size:24rpx;padding:4rpx 12rpx;border-radius:12rpx;margin-left:12rpx;"
+          class="{{rankMode==='solo'?'btn-primary':'btn'}}" data-value="solo" bindtap="switchRankMode">👤个人</text>
+        <text style="font-size:24rpx;padding:4rpx 12rpx;border-radius:12rpx;"
+          class="{{rankMode==='team'?'btn-primary':'btn'}}" data-value="team" bindtap="switchRankMode">👥组队</text>
+      </view>
+      <view wx:for="{{ranks}}" wx:key="name" style="display:flex;justify-content:space-between;padding:12rpx 0;border-bottom:1rpx solid #f3f4f6;">
+        <text>{{['🥇','🥈','🥉'][index] || index+1}} {{item.name}}</text>
+        <text style="font-weight:600;color:#4f46e5;">{{item.score}}分</text>
+      </view>
+      <view wx:if="{{ranks.length===0}}" style="color:#9ca3af;text-align:center;padding:20rpx;">暂无记录</view>
+    </view>
+  </block>
+
+  <!-- 成语接龙 -->
+  <block wx:if="{{tab==='idiom'}}">
+    <view class="card" style="text-align:center;">
+      <text style="font-size:28rpx;color:#9ca3af;">上一个成语</text>
+      <view style="font-size:48rpx;font-weight:700;color:#4f46e5;margin:12rpx 0;">{{idiomPrev || '等待开始...'}}</view>
+      <text style="color:#ef4444;">{{idiomResult}}</text>
+    </view>
+    <view class="card">
+      <input class="input" placeholder="输入成语接龙..." value="{{idiomInput}}" bindinput="onIdiomInput" style="text-align:center;font-size:32rpx;"/>
+      <button class="btn btn-primary" style="width:100%;margin-top:12rpx;" bindtap="checkIdiom" loading="{{loading}}">🔤 提交</button>
+    </view>
+    <view wx:if="{{idiomHint}}" class="card"><text style="color:#f59e0b;">💡 {{idiomHint}}</text></view>
+    <view class="card"><view class="card-title">接龙记录</view>
+      <view wx:for="{{idiomChain}}" wx:key="*this" style="display:inline-block;background:#4f46e5;color:#fff;padding:8rpx 16rpx;border-radius:12rpx;margin:4rpx;font-size:24rpx;">{{item}}</view>
+      <view wx:if="{{idiomChain.length===0}}" style="color:#9ca3af;">从任意成语开始吧！</view>
+    </view>
+  </block>
+
+  <!-- 飞花令 -->
+  <block wx:if="{{tab==='feihua'}}">
+    <view class="card"><view class="card-title">设置关键字</view>
+      <input class="input" placeholder="输入关键字，如：春" value="{{feihuaKeyword}}" bindinput="onFeihuaKw" style="text-align:center;font-size:40rpx;"/>
+    </view>
+    <view class="card">
+      <input class="input" placeholder="说出含关键字的诗句..." value="{{feihuaInput}}" bindinput="onFeihuaInput"/>
+      <button class="btn btn-primary" style="width:100%;margin-top:12rpx;" bindtap="checkFeihua">🌸 提交</button>
+      <view wx:if="{{feihuaResult}}" style="margin-top:12rpx;text-align:center;font-size:28rpx;">{{feihuaResult}}</view>
+    </view>
+  </block>
+
+  <!-- 语音变声 -->
+  <block wx:if="{{tab==='voice'}}">
+    <view class="card"><view class="card-title">选择音色</view>
+      <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+        <view class="tag" wx:for="{{voiceTypes}}" wx:key="*this" style="font-size:26rpx;"
+          data-value="{{item}}" bindtap="selectVoice"
+          style="background:{{voiceType===item?'#ef4444':'#f3f4f6'}};color:{{voiceType===item?'#fff':'#666'}};">{{item}}</view>
+      </view>
+    </view>
+    <view class="card">
+      <textarea class="textarea" placeholder="输入要变声的文字..." value="{{voiceText}}" bindinput="onVoiceText" maxlength="200"/>
+      <button class="btn btn-danger" style="width:100%;margin-top:12rpx;" bindtap="doTransform" loading="{{loading}}">🎙 语音合成</button>
+      <view wx:if="{{voiceResult}}" class="result-box" style="margin-top:12rpx;">{{voiceResult}}</view>
+    </view>
+  </block>
+
+  <!-- AI 视频生成 -->
+  <block wx:if="{{tab==='video'}}">
+    <view class="card"><view class="card-title">🎬 AI 视频生成</view>
+      <view style="color:#9ca3af;font-size:24rpx;margin-bottom:12rpx;">描述你想生成的视频画面</view>
+      <textarea class="textarea" placeholder="例如：年会舞台金色灯光闪烁，员工欢呼庆祝，彩带飘落" value="{{videoPrompt}}" bindinput="onVideoPrompt" maxlength="200"/>
+      <view class="card-title" style="margin-top:12rpx;">时长：{{videoDuration}} 秒</view>
+      <slider min="6" max="10" value="{{videoDuration}}" bindchange="onVideoDuration" show-value block-size="20"/>
+      <button class="btn btn-primary" style="width:100%;margin-top:12rpx;" bindtap="doGenerateVideo" loading="{{loading}}">🎬 生成视频</button>
+      <view wx:if="{{videoResult}}" class="result-box" style="margin-top:12rpx;">{{videoResult}}</view>
+    </view>
+  </block>
+
+  <!-- AI 音乐生成 -->
+  <block wx:if="{{tab==='music'}}">
+    <view class="card"><view class="card-title">🎵 AI 音乐生成</view>
+      <view style="color:#9ca3af;font-size:24rpx;margin-bottom:12rpx;">描述你想要的音乐风格</view>
+      <input class="input" placeholder="例如：年会欢快背景音乐，中国风" value="{{musicPrompt}}" bindinput="onMusicPrompt" style="margin-bottom:12rpx;"/>
+      <input class="input" placeholder="歌词（选填）：恭喜恭喜恭喜你" value="{{musicLyrics}}" bindinput="onMusicLyrics" style="margin-bottom:12rpx;"/>
+      <view class="card-title">时长：{{musicDuration}} 秒</view>
+      <slider min="10" max="60" value="{{musicDuration}}" bindchange="onMusicDuration" show-value block-size="20"/>
+      <button class="btn btn-success" style="width:100%;margin-top:12rpx;" bindtap="doGenerateMusic" loading="{{loading}}">🎵 生成音乐</button>
+      <view wx:if="{{musicResult}}" class="result-box" style="margin-top:12rpx;">{{musicResult}}</view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,60 @@
+﻿.hero {
+  text-align: center;
+  padding: 60rpx 20rpx 40rpx;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-radius: 24rpx;
+  margin-bottom: 30rpx;
+}
+.hero-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #ffd93d;
+  margin-bottom: 12rpx;
+}
+.hero-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #8892b0;
+}
+.module-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+.module-card {
+  width: calc(50% - 10rpx);
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 36rpx 24rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  transition: all 0.2s;
+}
+.module-card:active {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
+}
+.module-icon {
+  display: block;
+  font-size: 64rpx;
+  margin-bottom: 12rpx;
+}
+.module-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 6rpx;
+}
+.module-desc {
+  display: block;
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+.tips {
+  text-align: center;
+  padding: 40rpx 20rpx;
+  font-size: 24rpx;
+  color: #9ca3af;
+}

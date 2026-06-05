@@ -1,0 +1,32 @@
+﻿* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: #0a0a2e; color: #fff; overflow: hidden; height: 100vh; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px; height: 100vh; display: flex; flex-direction: column; }
+.header { text-align: center; padding: 20px 0; }
+.header h1 { font-size: 48px; background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcbff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.header .subtitle { font-size: 20px; color: #8892b0; margin-top: 8px; }
+.wall { flex: 1; overflow: hidden; position: relative; margin: 20px 0; }
+.message-scroll { position: absolute; width: 100%; animation: scrollUp 30s linear infinite; }
+.message-card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; margin-bottom: 16px; border-left: 4px solid #ffd93d; backdrop-filter: blur(10px); }
+.message-card .nickname { color: #ffd93d; font-size: 18px; font-weight: bold; }
+.message-card .text { font-size: 24px; margin-top: 8px; line-height: 1.5; }
+.message-card .likes { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
+.lottery-display { text-align: center; padding: 60px 0; }
+.lottery-display .prize-title { font-size: 36px; color: #ffd93d; margin-bottom: 30px; }
+.lottery-display .rolling { font-size: 72px; font-weight: bold; animation: pulse 0.3s infinite; }
+.winner-card { background: rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; margin: 20px; border: 2px solid #ffd93d; animation: popIn 0.5s ease-out; }
+.winner-card .winner-name { font-size: 56px; font-weight: bold; color: #ffd93d; }
+.winner-card .winner-prize { font-size: 28px; color: #ff6b6b; margin-top: 12px; }
+.winner-card .winner-msg { font-size: 22px; color: #8892b0; margin-top: 16px; font-style: italic; }
+.leaderboard { text-align: center; padding: 40px; }
+.leaderboard h2 { font-size: 42px; color: #ffd93d; margin-bottom: 30px; }
+.rank-item { display: flex; justify-content: space-between; padding: 16px 40px; margin: 8px 0; background: rgba(255,255,255,0.06); border-radius: 12px; font-size: 22px; }
+.rank-item.top { background: linear-gradient(90deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05)); }
+.rank-item .rank-num { color: #ffd93d; font-weight: bold; width: 40px; }
+.rank-item .rank-name { flex: 1; text-align: left; }
+.rank-item .rank-score { color: #6bcbff; font-weight: bold; }
+@keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.qr-code { position: fixed; bottom: 20px; right: 20px; text-align: center; }
+.qr-code img { width: 120px; height: 120px; border-radius: 12px; border: 2px solid #ffd93d; }
+.qr-code p { color: #8892b0; font-size: 14px; margin-top: 6px; }

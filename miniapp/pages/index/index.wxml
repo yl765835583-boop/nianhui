@@ -1,0 +1,38 @@
+﻿<view class="container">
+  <view class="hero">
+    <text class="hero-title">🎉 年会 AI 欢乐工具箱</text>
+    <text class="hero-desc">文稿创作 · 形象名片 · 现场互动 · 暖场游戏</text>
+  </view>
+
+  <view class="module-grid">
+    <view class="module-card" bindtap="goWenan">
+      <text class="module-icon">✍️</text>
+      <text class="module-title">文稿创作</text>
+      <text class="module-desc">致辞 · 串词 · 剧本</text>
+    </view>
+    <view class="module-card" bindtap="goAvatar">
+      <text class="module-icon">🪄</text>
+      <text class="module-title">形象名片</text>
+      <text class="module-desc">趣味头像 · 年度人设</text>
+    </view>
+    <view class="module-card" bindtap="goWall">
+      <text class="module-icon">💬</text>
+      <text class="module-title">现场互动</text>
+      <text class="module-desc">留言上墙</text>
+    </view>
+    <view class="module-card" bindtap="goLottery">
+      <text class="module-icon">🎰</text>
+      <text class="module-title">AI 抽奖</text>
+      <text class="module-desc">实时开奖 · 中奖记录</text>
+    </view>
+    <view class="module-card" bindtap="goGame">
+      <text class="module-icon">🎮</text>
+      <text class="module-title">暖场游戏</text>
+      <text class="module-desc">答题 · 接龙 · 变声</text>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text>💡 提示：管理员请访问 PC 端管理后台控制抽奖与留言墙</text>
+  </view>
+</view>

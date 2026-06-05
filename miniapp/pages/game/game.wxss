@@ -1,0 +1,3 @@
+﻿.tab-bar { display: flex; gap: 16rpx; padding: 16rpx 0; white-space: nowrap; }
+.option { padding: 16rpx 20rpx; margin: 8rpx 0; background: #f9fafb; border-radius: 12rpx; font-size: 26rpx; border: 2rpx solid transparent; }
+.option-selected { background: #eef2ff; border-color: #4f46e5; color: #4f46e5; font-weight: 500; }

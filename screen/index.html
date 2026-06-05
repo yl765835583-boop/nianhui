@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>年会互动大屏</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0a0a2e;color:#fff;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+.top-bar h1{font-size:22px;background:linear-gradient(135deg,#ff6b6b,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tabs{display:flex;gap:4px;flex-shrink:0;padding:6px 20px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.04)}
+.tab-btn{padding:8px 20px;border:none;border-radius:8px 8px 0 0;font-size:15px;cursor:pointer;background:transparent;color:#8892b0;transition:all 0.2s}
+.tab-btn:hover{color:#ffd93d;background:rgba(255,215,0,0.05)}
+.tab-btn.active{color:#ffd93d;background:rgba(255,215,0,0.1);font-weight:600}
+.main{flex:1;overflow:hidden;position:relative}
+.panel{display:none;position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;padding:20px}
+.panel.active{display:flex;flex-direction:column;align-items:center}
+
+/* Sign-in */
+.signin-header{text-align:center;margin-bottom:20px}
+.signin-header h2{font-size:40px;color:#ffd93d}
+.signin-header .count{font-size:64px;color:#6bcbff;font-weight:bold}
+.signin-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:900px}
+.signin-card{background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:12px 20px;text-align:center;font-size:20px;animation:popIn 0.4s ease-out;min-width:100px;display:flex;flex-direction:column;align-items:center}
+.signin-card .sname{color:#ffd93d;font-weight:bold}
+.signin-card .sdept{color:#8892b0;font-size:14px}
+
+/* Wall */
+.wall-scroll{width:100%;max-width:800px;display:flex;flex-direction:column;gap:10px;max-height:65vh;overflow-y:auto;padding:10px}
+.msg-card{background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 20px;font-size:18px;display:flex;gap:16px;align-items:flex-start}
+.msg-card .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.msg-card .mbody{flex:1}
+.msg-card .mnick{color:#ffd93d;font-weight:600;font-size:14px}
+.msg-card .mtext{color:#e0e0e0;margin-top:4px;line-height:1.5}
+.msg-card .mtime{color:#8892b0;font-size:11px;margin-top:4px}
+
+/* Lottery */
+.lottery-box{text-align:center}
+.lottery-box .roll-name{font-size:96px;font-weight:bold;color:#ffd93d;min-height:140px;display:flex;align-items:center;justify-content:center;transition:all 0.1s}
+.lottery-box .winner-show{text-align:center;padding:20px 40px;background:rgba(255,215,0,0.08);border:2px solid #ffd93d;border-radius:20px;margin:16px 0;animation:popIn 0.5s ease-out}
+.lottery-box .winner-show .wname{font-size:56px;color:#ffd93d;font-weight:bold}
+.lottery-box .winner-show .wprize{font-size:28px;color:#ff6b6b;margin-top:4px}
+.lottery-box .winner-show .wmsg{font-size:20px;color:#8892b0;margin-top:8px;font-style:italic}
+.lottery-stats{display:flex;gap:30px;margin-top:16px}
+.lottery-stats .stat{text-align:center}
+.lottery-stats .stat .sn{font-size:42px;color:#6bcbff;font-weight:bold}
+.lottery-stats .stat .sl{font-size:14px;color:#8892b0}
+.winners-list{width:700px;max-height:250px;overflow-y:auto;margin-top:16px}
+.winner-row{display:flex;justify-content:space-between;padding:8px 16px;margin:4px 0;background:rgba(255,215,0,0.06);border-radius:8px;font-size:16px}
+
+/* Redpacket */
+.rp-stats{font-size:20px;color:#ffd93d;margin-bottom:12px}
+
+/* Shake */
+.shake-waiting{text-align:center;margin-top:60px}
+.shake-waiting .cnt{font-size:80px;color:#ffd93d;font-weight:bold}
+.race-track{width:80%;max-width:800px;display:flex;flex-direction:column;gap:14px;max-height:60vh;overflow-y:auto}
+.runner{display:flex;align-items:center;gap:12px}
+.runner .rnick{width:140px;text-align:right;font-size:18px;color:#ffd93d;font-weight:bold}
+.runner .rlane{flex:1;height:40px;background:rgba(255,255,255,0.06);border-radius:20px;overflow:hidden;position:relative}
+.runner .rprogress{height:100%;border-radius:20px;background:linear-gradient(90deg,#4f46e5,#10b981);transition:width 0.2s;display:flex;align-items:center;padding-left:12px;font-size:13px;font-weight:600}
+.runner .rpct{width:50px;text-align:left;font-size:16px;color:#6bcbff;font-weight:bold}
+.winner-banner{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);flex-direction:column;align-items:center;justify-content:center;z-index:200}
+.winner-banner.show{display:flex}
+.winner-banner .trophy{font-size:120px;animation:pulse 0.5s infinite}
+.winner-banner .wname{font-size:72px;color:#ffd93d;font-weight:bold;margin:20px 0}
+
+/* Leaderboard */
+.leaderboard{width:600px;max-height:70vh;overflow-y:auto}
+.lb-row{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;margin:6px 0;background:rgba(255,255,255,0.04);border-radius:12px;font-size:20px}
+.lb-row .rank{width:50px;font-size:28px}
+.lb-row .lname{flex:1;color:#ffd93d;font-weight:600}
+.lb-row .lscore{color:#6bcbff;font-weight:bold;font-size:24px}
+
+/* QR */
+.qr-box{position:fixed;bottom:20px;left:20px;z-index:100;text-align:center;cursor:grab;user-select:none}
+.qr-box img{width:100px;height:100px;background:#fff;border-radius:10px;padding:4px}
+.qr-box p{color:#8892b0;font-size:12px;margin-top:4px}
+
+.auto-rotate{font-size:12px;color:#8892b0;text-align:center;margin-top:8px}
+.auto-rotate span{color:#f59e0b;cursor:pointer}
+
+@keyframes popIn{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>🎉 年会互动大屏</h1>
+  <span style="color:#8892b0;font-size:13px" id="clock"></span>
+</div>
+
+<div class="tabs" id="tabBar">
+  <button class="tab-btn active" data-tab="signin">📋 签到</button>
+  <button class="tab-btn" data-tab="wall">💬 留言墙</button>
+  <button class="tab-btn" data-tab="lottery">🎰 抽奖</button>
+  <button class="tab-btn" data-tab="redpacket">🧧 红包雨</button>
+  <button class="tab-btn" data-tab="shakerace">📳 摇一摇赛跑</button>
+  <button class="tab-btn" data-tab="leaderboard">🏆 排行榜</button>
+</div>
+
+<div class="main">
+  <div class="panel active" id="pnl-signin">
+    <div class="signin-header"><h2>📋 扫码签到</h2><div class="count" id="signinCount">0</div><p style="color:#8892b0">人已签到</p></div>
+    <div class="signin-grid" id="signinGrid"></div>
+    <p class="auto-rotate">⏱ <span onclick="toggleAutoRotate()" id="rotateBtn">开启自动轮播</span></p>
+  </div>
+  <div class="panel" id="pnl-wall">
+    <div class="signin-header"><h2>💬 年会留言墙</h2></div>
+    <div class="wall-scroll" id="wallScroll"></div>
+    <p class="auto-rotate">⏱ <span onclick="toggleAutoRotate()" id="rotateBtn2">开启自动轮播</span></p>
+  </div>
+  <div class="panel" id="pnl-lottery">
+    <div class="lottery-box">
+      <h2 style="font-size:32px;color:#ffd93d;margin-bottom:8px">🎰 智能抽奖</h2>
+      <div class="roll-name" id="rollName">等待开奖</div>
+      <div id="winnerShow"></div>
+      <div class="lottery-stats">
+        <div class="stat"><div class="sn" id="lPool">0</div><div class="sl">候选</div></div>
+        <div class="stat"><div class="sn" id="lWinners">0</div><div class="sl">中奖</div></div>
+      </div>
+      <div class="winners-list" id="winnersList"></div>
+    </div>
+  </div>
+  <div class="panel" id="pnl-redpacket">
+    <canvas id="rpCanvas"></canvas>
+    <div style="position:relative;z-index:10;text-align:center">
+      <h2 style="font-size:40px;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🧧 红包雨</h2>
+      <div class="rp-stats" id="rpStats">等待管理员发射红包雨...</div>
+    </div>
+    <div id="rpClaimedList" style="position:fixed;right:20px;top:120px;width:260px;max-height:50vh;overflow-y:auto;z-index:10;display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+  <div class="panel" id="pnl-shakerace">
+    <div class="shake-waiting" id="shakeWaiting">
+      <h2>📳 摇一摇赛跑</h2>
+      <p style="color:#8892b0;margin-top:8px">参与人数</p>
+      <div class="cnt" id="shakePlayerCount">0</div>
+      <p style="color:#8892b0">等待管理员开始比赛...</p>
+    </div>
+    <div class="race-track" id="raceTrack" style="display:none"></div>
+    <div class="winner-banner" id="winnerBanner">
+      <div class="trophy">🏆</div>
+      <div class="wname" id="shakeWinnerName"></div>
+      <p style="color:#8892b0;font-size:24px">恭喜获得冠军！</p>
+    </div>
+  </div>
+  <div class="panel" id="pnl-leaderboard">
+    <h2 style="font-size:32px;color:#ffd93d;margin-bottom:16px">游戏排行榜</h2>
+    <div style="display:flex;gap:16px;margin-bottom:16px">
+      <button class="tab-btn active" id="btnSolo" onclick="loadLeaderboard('solo')">个人</button>
+      <button class="tab-btn" id="btnTeam" onclick="loadLeaderboard('team')">组队</button>
+    </div>
+    <div class="leaderboard" id="leaderboardList"></div>
+  </div>
+</div>
+
+
+<div id="idiomOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:150;flex-direction:column;align-items:center;justify-content:center">
+  <div style="background:#1a1a2e;border:2px solid #ffd93d;border-radius:20px;padding:40px 60px;text-align:center;max-width:600px">
+    <h2 style="color:#ffd93d;font-size:32px;margin-bottom:8px">🔤 同音字接龙</h2>
+    <div style="font-size:48px;font-weight:bold;color:#ffd93d;margin:16px 0" id="idiomCurrent">等待开始...</div>
+    <p style="color:#8892b0;font-size:16px">同音字接龙（同音即可）</p>
+    <div id="idiomChainDisplay" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;max-width:500px"></div>
+  </div>
+</div>
+<div class="qr-box" id="qrBox">
+  <img class="qr-img" src="" alt="扫码参与">
+  <p>微信扫一扫</p>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ===== 通用 =====
+function $(s){return document.querySelector(s)}
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+async function get(p){const r=await fetch('/api'+p);return r.json()}
+async function post(p,b){const r=await fetch('/api'+p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});return r.json()}
+
+// Clock
+setInterval(function(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN')},1000);
+
+// Tab switching
+var currentTab='signin';
+document.getElementById('tabBar').addEventListener('click',function(e){
+  if(!e.target.classList.contains('tab-btn')) return;
+  var tab=e.target.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+  e.target.classList.add('active');
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('pnl-'+tab).classList.add('active');
+  currentTab=tab;
+  if(tab==='signin') loadSignin();
+  if(tab==='wall') loadWall();
+  if(tab==='lottery') updateLottery();
+  if(tab==='redpacket') initRedpacket();
+  if(tab==='leaderboard') loadLeaderboard('solo');
+});
+
+// Auto-rotate
+var autoRotateTimer=null, autoRotating=false;
+var tabOrder=['signin','wall','lottery','redpacket','shakerace','leaderboard'];
+function toggleAutoRotate(){
+  autoRotating=!autoRotating;
+  var btn=document.getElementById('rotateBtn');
+  if(autoRotating){
+    btn.textContent='停止轮播';btn.style.color='#10b981';
+    autoRotateTimer=setInterval(function(){
+      var idx=tabOrder.indexOf(currentTab);
+      var next=tabOrder[(idx+1)%tabOrder.length];
+      document.querySelector('[data-tab="'+next+'"]').click();
+    },8000);
+  }else{
+    btn.textContent='开启自动轮播';btn.style.color='#f59e0b';
+    clearInterval(autoRotateTimer);
+  }
+}
+
+// ===== QR Code =====
+(function(){
+  var img=document.querySelector('.qr-img');
+  if(img) img.src='/api/qrcode?url='+encodeURIComponent(location.origin+'/api/wechat/auth');
+  var box=document.getElementById('qrBox'),dragging=false,sX,sY,sL,sT;
+  box.addEventListener('mousedown',function(e){e.preventDefault();dragging=true;box.style.cursor='grabbing';sX=e.clientX;sY=e.clientY;var r=box.getBoundingClientRect();sL=r.left;sT=r.top;box.style.bottom='auto';box.style.right='auto';box.style.left=sL+'px';box.style.top=sT+'px'});
+  box.addEventListener('touchstart',function(e){e.preventDefault();dragging=true;var t=e.touches[0];sX=t.clientX;sY=t.clientY;var r=box.getBoundingClientRect();sL=r.left;sT=r.top;box.style.bottom='auto';box.style.right='auto';box.style.left=sL+'px';box.style.top=sT+'px'},{passive:false});
+  document.addEventListener('mousemove',function(e){if(!dragging)return;e.preventDefault();box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,sL+e.clientX-sX))+'px';box.style.top=Math.max(0,Math.min(window.innerHeight-box.offsetHeight,sT+e.clientY-sY))+'px'});
+  document.addEventListener('touchmove',function(e){if(!dragging)return;e.preventDefault();var t=e.touches[0];box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,sL+t.clientX-sX))+'px';box.style.top=Math.max(0,Math.min(window.innerHeight-box.offsetHeight,sT+t.clientY-sY))+'px'},{passive:false});
+  document.addEventListener('mouseup',function(){dragging=false;box.style.cursor='grab'});
+  document.addEventListener('touchend',function(){dragging=false});
+})();
+
+// ===== 签到 =====
+var signinList=[];
+function loadSignin(){
+  get('/signin/list').then(function(res){
+    if(res.code!==0) return;
+    signinList=res.data.list||[];
+    document.getElementById('signinCount').textContent=res.data.total;
+    document.getElementById('signinGrid').innerHTML=signinList.map(function(s){
+      var av=s.avatar?'<img src="'+esc(s.avatar)+'" style="width:40px;height:40px;border-radius:50%;margin-bottom:4px;object-fit:cover" onerror="this.style.display=\'none\'">':'<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 4px;color:#fff">'+esc((s.name||'?')[0])+'</div>';
+      return '<div class="signin-card">'+av+'<div class="sname">'+esc(s.name)+'</div>'+(s.dept?'<div class="sdept">'+esc(s.dept)+'</div>':'')+'</div>';
+    }).join('');
+  });
+}
+loadSignin();
+
+// ===== 留言墙 =====
+function loadWall(){
+  get('/wall/list').then(function(res){
+    if(res.code!==0) return;
+    var msgs=res.data||[];
+    document.getElementById('wallScroll').innerHTML=msgs.length===0
+      ?'<p style="color:#8892b0;text-align:center;padding:40px">暂无留言，扫码发送第一条吧！</p>'
+      :msgs.map(function(m){
+        return '<div class="msg-card"><div class="avatar">'+esc((m.nickname||'?')[0])+'</div><div class="mbody"><div class="mnick">'+esc(m.nickname)+'</div><div class="mtext">'+esc(m.text)+'</div><div class="mtime">'+new Date(m.time).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})+' · ❤ '+(m.likes||0)+'</div></div></div>';
+      }).join('');
+  });
+}
+
+// ===== 抽奖 =====
+var poolNames=[],rollingTimer=null,knownWinners={};
+function updateLottery(){
+  Promise.all([get('/lottery/state'),get('/lottery/pool'),get('/lottery/winners')]).then(function(arr){
+    var state=arr[0],pool=arr[1],winners=arr[2];
+    if(state.code===0){
+      var d=state.data;
+      document.getElementById('lPool').textContent=d.poolCount||0;
+      document.getElementById('lWinners').textContent=d.winnersCount||0;
+      if(d.isActive&&!rollingTimer&&poolNames.length>0){
+        startLotteryRoll();
+      }else if(!d.isActive&&rollingTimer){
+        clearInterval(rollingTimer);rollingTimer=null;
+      }
+    }
+    if(pool.code===0){poolNames=(pool.data||[]).map(function(p){return p.name})}
+    if(winners.code===0){
+      var list=(winners.data||[]).slice(0,20);
+      document.getElementById('winnersList').innerHTML=list.map(function(w){
+        return '<div class="winner-row"><span style="color:#ffd93d">'+esc(w.name)+'</span><span style="color:#ff6b6b">'+esc(w.prize.name||w.prize)+'</span></div>';
+      }).join('');
+      for(var i=0;i<(winners.data||[]).length;i++){
+        var w=winners.data[i];
+        if(!knownWinners[w.id]){knownWinners[w.id]=true;showLotteryWinner(w);break}
+      }
+    }
+  });
+}
+function startLotteryRoll(){
+  var el=document.getElementById('rollName'),idx=0;
+  rollingTimer=setInterval(function(){idx=(idx+1)%poolNames.length;el.textContent=poolNames[idx]},60);
+}
+function showLotteryWinner(w){
+  if(rollingTimer){clearInterval(rollingTimer);rollingTimer=null}
+  var el=document.getElementById('rollName');
+  var names=poolNames.sort(function(){return Math.random()-0.5}).slice(0,8);
+  names.push(w.name);
+  var count=0;
+  function tick(){
+    if(count<names.length){el.textContent=names[count];count++;setTimeout(tick,150+count*80)}
+    else{el.textContent=w.name;el.style.fontSize='120px';el.style.color='#ffd93d';el.style.textShadow='0 0 40px rgba(255,215,0,0.8)';
+      document.getElementById('winnerShow').innerHTML='<div class="winner-show"><div class="wname">'+esc(w.name)+'</div><div class="wprize">'+esc(w.prize.name||w.prize)+'</div>'+(w.message?'<div class="wmsg">'+esc(w.message)+'</div>':'')+'</div>';
+      setTimeout(function(){el.style.fontSize='96px';el.style.textShadow='none';document.getElementById('winnerShow').innerHTML='';updateLottery()},5000);
+    }
+  }
+  tick();
+}
+updateLottery();
+setInterval(function(){if(currentTab==='lottery')updateLottery()},5000);
+
+// ===== 红包雨 =====
+var rpCanvas,rpCtx,rpW,rpH,rpPackets=[],rpActive=false,rpElapsed=0,rpLastTime=0,rpAnimId=null;
+function initRedpacket(){
+  rpCanvas=document.getElementById('rpCanvas');
+  rpCtx=rpCanvas.getContext('2d');
+  rpW=rpCanvas.width=window.innerWidth;rpH=rpCanvas.height=window.innerHeight;
+  window.addEventListener('resize',function(){rpW=rpCanvas.width=window.innerWidth;rpH=rpCanvas.height=window.innerHeight});
+  if(!rpAnimId&&rpPackets.length===0) rpAnimId=requestAnimationFrame(rpLoop);
+}
+function rpLoop(time){
+  rpAnimId=requestAnimationFrame(rpLoop);
+  if(!rpActive&&rpPackets.every(function(p){return p.y>1.2||p.claimed})) return;
+  var dt=rpLastTime?Math.min((time-rpLastTime)/1000,0.1):0.016;
+  rpLastTime=time;rpElapsed+=dt;
+  rpCtx.clearRect(0,0,rpW,rpH);
+  for(var i=0;i<30;i++){rpCtx.fillStyle='rgba(255,215,0,'+(0.01+Math.random()*0.04)+')';rpCtx.fillRect(Math.random()*rpW,Math.random()*rpH,2+Math.random()*3,2+Math.random()*3)}
+  for(var i=0;i<rpPackets.length;i++){
+    var p=rpPackets[i];
+    if(rpElapsed<p.delay||p.claimed) continue;
+    p.y+=p.speed*dt*60;p.rotation+=p.rotSpeed;
+    if(p.y>1.15){p.claimed=true;continue}
+    var cx=p.x*rpW,cy=p.y*rpH,s=p.size;
+    rpCtx.save();rpCtx.translate(cx,cy);rpCtx.rotate(p.rotation);
+    var grad=rpCtx.createLinearGradient(-s/2,0,s/2,0);
+    grad.addColorStop(0,'#dc2626');grad.addColorStop(0.5,'#ff4444');grad.addColorStop(1,'#b91c1c');
+    rpCtx.fillStyle=grad;var r=s*0.18;
+    rpCtx.beginPath();rpCtx.moveTo(-s/2+r,-s*0.7);rpCtx.lineTo(s/2-r,-s*0.7);
+    rpCtx.quadraticCurveTo(s/2,-s*0.7,s/2,-s*0.7+r);rpCtx.lineTo(s/2,s*0.35-r);
+    rpCtx.quadraticCurveTo(s/2,s*0.35,s/2-r,s*0.35);rpCtx.lineTo(-s/2+r,s*0.35);
+    rpCtx.quadraticCurveTo(-s/2,s*0.35,-s/2,s*0.35-r);rpCtx.lineTo(-s/2,-s*0.7+r);
+    rpCtx.quadraticCurveTo(-s/2,-s*0.7,-s/2+r,-s*0.7);rpCtx.closePath();rpCtx.fill();
+    rpCtx.fillStyle='#ffd700';rpCtx.fillRect(-s*0.4,-s*0.3,s*0.8,s*0.14);
+    rpCtx.fillStyle='#fff';rpCtx.beginPath();rpCtx.arc(0,s*0.04,s*0.22,0,Math.PI*2);rpCtx.fill();
+    rpCtx.fillStyle='#b91c1c';rpCtx.font='bold '+(s*0.4)+'px "Microsoft YaHei"';rpCtx.textAlign='center';rpCtx.textBaseline='middle';rpCtx.fillText('开',0,s*0.05);
+    rpCtx.restore();
+  }
+}
+
+// ===== 排行榜 =====
+function loadLeaderboard(mode){
+  document.getElementById('btnSolo').classList.toggle('active',mode==='solo');
+  document.getElementById('btnTeam').classList.toggle('active',mode==='team');
+  get('/game/ranks?mode='+mode).then(function(res){
+    if(res.code!==0) return;
+    var ranks=res.data||[];
+    var medals=['🥇','🥈','🥉'];
+    document.getElementById('leaderboardList').innerHTML=ranks.length===0
+      ?'<p style="color:#8892b0;text-align:center;padding:40px">暂无排名</p>'
+      :ranks.map(function(r,i){
+        return '<div class="lb-row"><span class="rank">'+(medals[i]||(i+1))+'</span><span class="lname">'+esc(r.name)+'</span><span class="lscore">'+r.score+'分</span></div>';
+      }).join('');
+  });
+}
+
+// ===== Socket.IO =====
+var socket=io();
+// Signin
+socket.on('signin:new',function(data){
+  signinList.push({name:data.name,dept:data.dept,avatar:data.avatar});
+  document.getElementById('signinCount').textContent=data.total;
+  var grid=document.getElementById('signinGrid');
+  grid.insertAdjacentHTML('afterbegin','<div class="signin-card">'+(data.avatar?'<img src="'+esc(data.avatar)+'" style="width:40px;height:40px;border-radius:50%;margin-bottom:4px;object-fit:cover" onerror="this.style.display=\'none\'">':'<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 4px;color:#fff">'+esc((data.name||'?')[0])+'</div>')+'<div class="sname">'+esc(data.name)+'</div>'+(data.dept?'<div class="sdept">'+esc(data.dept)+'</div>':'')+'</div>');
+});
+socket.on('signin:reset',function(){signinList=[];loadSignin()});
+// Wall
+socket.on('wall:updated',function(){if(currentTab==='wall')loadWall()});
+// Lottery
+socket.on('lottery:updated',function(){if(currentTab==='lottery')updateLottery()});
+// Redpacket
+socket.on('redpacket:start',function(data){
+  rpActive=true;rpElapsed=0;rpLastTime=0;rpPackets=[];
+  document.getElementById('rpClaimedList').innerHTML='';
+  document.getElementById('rpStats').textContent='已抢: 0 / '+data.count;
+  for(var i=0;i<data.count;i++){rpPackets.push({x:0.02+Math.random()*0.96,y:-0.05-Math.random()*0.3,delay:Math.random()*(data.duration||5)*0.5,speed:0.005+Math.random()*0.007,size:40+Math.random()*30,rotation:Math.random()*Math.PI*2,rotSpeed:(Math.random()-0.5)*0.04,claimed:false})}
+  if(rpPackets.length>0&&!rpAnimId) rpAnimId=requestAnimationFrame(rpLoop);
+});
+socket.on('redpacket:claimed',function(data){
+  var claimedCount=document.querySelectorAll('#rpClaimedList>*').length+1;
+  document.getElementById('rpStats').textContent='已抢: '+claimedCount+' / 剩余 '+data.remaining;
+  var list=document.getElementById('rpClaimedList');
+  list.insertAdjacentHTML('afterbegin','<div style="background:rgba(255,215,0,0.15);border-radius:10px;padding:8px 14px;font-size:14px;color:#ffd93d;animation:popIn 0.3s ease-out">🎉 <strong>'+esc(data.nickname)+'</strong> 抢到 <span style="color:#10b981;font-weight:bold">¥'+data.amount.toFixed(2)+'</span></div>');
+});
+socket.on('redpacket:end',function(data){
+  rpActive=false;
+  document.getElementById('rpStats').textContent='红包雨结束！共抢走 '+(data.claimed||0)+' / '+(data.total||0)+' 个红包';
+});
+// Shake race
+socket.on('shake:raceStarted',function(data){
+  document.getElementById('shakeWaiting').style.display='block';
+  document.getElementById('raceTrack').style.display='none';
+  document.getElementById('shakePlayerCount').textContent='0';
+  document.getElementById('winnerBanner').classList.remove('show');
+});
+socket.on('shake:ranks',function(data){
+  if(!data.active) return;
+  var ranks=data.ranks;
+  document.getElementById('shakePlayerCount').textContent=ranks.length;
+  if(ranks.length===0) return;
+  document.getElementById('shakeWaiting').style.display='none';
+  var track=document.getElementById('raceTrack');
+  track.style.display='flex';
+  track.innerHTML=ranks.map(function(r,i){
+    var medal=i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+    return '<div class="runner"><div class="rnick">'+medal+esc(r.nickname)+'</div><div class="rlane"><div class="rprogress" style="width:'+r.progress+'%">'+r.shakes+'次</div></div><div class="rpct">'+r.progress+'%</div></div>';
+  }).join('');
+});
+socket.on('shake:winner',function(data){
+  document.getElementById('shakeWinnerName').textContent=data.winner;
+  document.getElementById('winnerBanner').classList.add('show');
+  setTimeout(function(){document.getElementById('winnerBanner').classList.remove('show')},5000);
+});
+socket.on('idiom:state',function(data){
+  var overlay=document.getElementById('idiomOverlay');
+  if(data.started&&data.chain.length>0){
+    overlay.style.display='flex';
+    document.getElementById('idiomCurrent').textContent=data.prevWord||'';
+    document.getElementById('idiomChainDisplay').innerHTML=data.chain.map(function(w,i){return '<span style="display:inline-block;background:#4f46e5;color:#fff;padding:6px 14px;border-radius:10px;font-size:16px;margin:2px">'+(i+1)+'. '+esc(w)+'</span>'}).join('');
+  }else{
+    overlay.style.display='none';
+  }
+});
+socket.on('shake:reset',function(){
+  document.getElementById('shakeWaiting').style.display='block';
+  document.getElementById('raceTrack').style.display='none';
+  document.getElementById('shakePlayerCount').textContent='0';
+  document.getElementById('winnerBanner').classList.remove('show');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+﻿{
+  "description": "年会 AI 欢乐工具箱",
+  "packOptions": { "ignore": [] },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.0.0",
+  "appid": "你的小程序AppID",
+  "projectname": "nianhui-ai"
+}

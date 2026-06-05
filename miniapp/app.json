@@ -1,0 +1,18 @@
+﻿{
+  "pages": [
+    "pages/index/index",
+    "pages/wenan/wenan",
+    "pages/avatar/avatar",
+    "pages/wall/wall",
+    "pages/lottery/lottery",
+    "pages/game/game"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#1a1a2e",
+    "navigationBarTitleText": "年会 AI 工具箱",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f0f2f5"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

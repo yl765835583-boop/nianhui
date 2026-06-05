@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="card" style="display:flex;gap:16rpx;">
+    <view class="btn {{mode==='avatar'?'btn-primary':'btn'}}" data-mode="avatar" bindtap="switchMode">🪄 趣味头像</view>
+    <view class="btn {{mode==='persona'?'btn-primary':'btn'}}" data-mode="persona" bindtap="switchMode">🏷️ 年度人设</view>
+  </view>
+
+  <block wx:if="{{mode==='avatar'}}">
+    <view class="card"><view class="card-title">选择头像风格</view>
+      <view style="display:flex;flex-wrap:wrap;gap:12rpx;">
+        <view class="tag" wx:for="{{avatarStyles}}" wx:key="*this"
+          style="background:{{avatarStyle===item?'#f59e0b':'#f3f4f6'}};color:{{avatarStyle===item?'#fff':'#666'}};padding:12rpx 24rpx;"
+          data-value="{{item}}" bindtap="selectStyle">{{item}}</view>
+      </view>
+      <view style="padding:8rpx 0;text-align:center;">
+        <button class="btn btn-warning" style="width:100%;" bindtap="choosePhoto">📷 {{uploaded ? "重新选择照片" : "上传你的照片"}}</button>
+        <image wx:if="{{photoUrl}}" src="{{photoUrl}}" mode="widthFix" style="width:200rpx;border-radius:12rpx;margin-top:12rpx;"/>
+      </view>
+    </view>
+    <view style="padding:0 20rpx;">
+      <button class="btn btn-primary" style="width:100%;" bindtap="doGenerateAvatar" loading="{{loading}}">🎨 生成头像</button>
+    </view>
+  </block>
+
+  <block wx:if="{{mode==='persona'}}">
+    <view class="card"><view class="card-title">你的信息</view>
+      <input class="input" placeholder="昵称 *" value="{{nickname}}" bindinput="onNickInput" style="margin-bottom:12rpx;"/>
+      <input class="input" placeholder="岗位（如：后端工程师）" value="{{role}}" bindinput="onRoleInput" style="margin-bottom:12rpx;"/>
+      <input class="input" placeholder="部门" value="{{department}}" bindinput="onDeptInput"/>
+    </view>
+    <view style="padding:0 20rpx;">
+      <button class="btn btn-primary" style="width:100%;" bindtap="doGeneratePersona" loading="{{loading}}">✨ 生成年度人设卡片</button>
+    </view>
+  </block>
+
+  <view wx:if="{{showResult}}" class="card" style="margin-top:20rpx;text-align:center;">
+    <image wx:if="{{resultImage}}" src="{{resultImage}}" mode="widthFix" style="width:100%;border-radius:12rpx;margin-bottom:16rpx;" show-menu-by-longpress/>
+    <view wx:if="{{resultText}}" class="result-box" style="text-align:left;">{{resultText}}</view>
+    <view style="display:flex;gap:16rpx;margin-top:16rpx;">
+      <button class="btn btn-success" style="flex:1;" bindtap="saveImage" wx:if="{{resultImage}}">💾 保存图片</button>
+      <button class="btn btn-warning" style="flex:1;" open-type="share">📤 分享朋友圈</button>
+    </view>
+  </view>
+</view>

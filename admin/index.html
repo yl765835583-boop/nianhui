@@ -1,0 +1,395 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>年会 AI 工具箱 - 管理后台</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="sidebar">
+  <h2>🎯 管理后台</h2>
+  <a href="#" class="active" data-section="overview">📊 全局概览</a>
+  <a href="#" data-section="features">🔧 功能开关</a>
+  <a href="#" data-section="lottery">🎰 抽奖管理</a>
+  <a href="#" data-section="messages">💬 留言管理</a>
+  <a href="#" data-section="video">🎬 视频生成</a>
+  <a href="#" data-section="music">🎵 音乐生成</a>
+  <a href="#" data-section="redpacket">🧧 红包雨</a>
+  <a href="#" data-section="shakerace">📳 摇一摇赛跑</a>
+  <a href="#" data-section="data">📋 数据查看</a>
+</div>
+
+<div class="main">
+  <div id="section-overview" class="section active">
+    <div class="card"><h3>📊 全局概览</h3>
+      <div id="overviewStats" style="display:flex;gap:20px;flex-wrap:wrap;">
+        <div class="card" style="flex:1;min-width:150px;text-align:center;"><div style="font-size:36px;font-weight:bold;color:#4f46e5;" id="statWall">-</div><div style="color:#6b7280;">留言总数</div></div>
+        <div class="card" style="flex:1;min-width:150px;text-align:center;"><div style="font-size:36px;font-weight:bold;color:#10b981;" id="statPool">-</div><div style="color:#6b7280;">抽奖候选</div></div>
+        <div class="card" style="flex:1;min-width:150px;text-align:center;"><div style="font-size:36px;font-weight:bold;color:#f59e0b;" id="statWinners">-</div><div style="color:#6b7280;">中奖人数</div></div>
+        <div class="card" style="flex:1;min-width:150px;text-align:center;"><div style="font-size:36px;font-weight:bold;color:#ef4444;" id="statPlayers">-</div><div style="color:#6b7280;">游戏玩家</div></div>
+      </div>
+    </div>
+    <div class="card"><h3>📱 投屏页面链接</h3>
+      <p>留言墙：<a href="/screen/index.html" target="_blank" style="color:#4f46e5;">/screen/index.html</a> （点击新窗口打开，全屏 F11）</p>
+      <p>抽奖屏：<a href="/screen/index.html" target="_blank" style="color:#4f46e5;">/screen/index.html</a></p>
+      <p>排行榜：<a href="/screen/index.html" target="_blank" style="color:#4f46e5;">/screen/index.html</a></p>
+    </div>
+  </div>
+
+  <div id="section-features" class="section">
+    <div class="card"><h3>🔧 功能开关</h3>
+      <div id="featureToggles">
+        <div id="toggleList"></div>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveFeatures()">💾 保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-lottery" class="section">
+    <div class="card"><h3>📋 导入抽奖名单</h3>
+      <textarea id="lotteryNames" placeholder="每行一个姓名（可选部门）&#10;例如：&#10;姓名,部门&#10;姓名,部门"></textarea>
+      <button class="btn btn-primary" onclick="importNames()">导入名单</button>
+    </div>
+    <div class="card"><h3>🏆 设置奖项</h3>
+      <div id="prizeList"></div>
+      <button class="btn btn-success" onclick="addPrize()">+ 添加奖项</button>
+      <button class="btn btn-primary" style="margin-left:8px;" onclick="savePrizes()">保存奖项</button>
+    </div>
+    <div class="card"><h3>🚫 黑名单</h3>
+      <input type="text" id="blacklistInput" placeholder="输入要排除的姓名，逗号分隔">
+      <button class="btn btn-danger" onclick="setBlacklist()">更新黑名单</button>
+    </div>
+    <div class="card"><h3>🎰 开奖控制</h3>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="number" id="drawCount" value="1" min="1" max="10" style="width:80px;margin-bottom:0;" placeholder="数量">
+        <button class="btn btn-primary" onclick="toggleLottery()" id="btnToggle">开启抽奖</button>
+        <button class="btn btn-success" onclick="doDraw()">🎯 抽奖！</button>
+        <button class="btn btn-danger" onclick="resetLottery()">🔄 重置</button>
+      </div>
+      <div id="drawResult" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <div id="section-messages" class="section">
+    <div class="card"><h3>🎁 随机抽留言送礼品</h3>
+      <button class="btn btn-warning" onclick="drawRandomMessage()">🎯 随机抽一条留言</button>
+      <div id="randomDrawResult"></div>
+    </div>
+    <div class="card"><h3>💬 留言列表</h3>
+      <div id="msgList"></div>
+    </div>
+  </div>
+
+  <div id="section-video" class="section">
+    <div class="card"><h3>🎬 AI 视频生成</h3>
+      <textarea id="videoPrompt" placeholder="描述视频画面，如：年会舞台金色灯光，员工欢呼庆祝"></textarea>
+      <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+        <span>时长：</span>
+        <select id="videoDuration" style="padding:8px;border-radius:6px;border:1px solid #d1d5db;">
+          <option value="6">6 秒</option>
+          <option value="10">10 秒</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="generateVideo()">🎬 生成视频</button>
+      <div id="videoResult" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <div id="section-music" class="section">
+    <div class="card"><h3>🎵 AI 音乐生成</h3>
+      <input type="text" id="musicPrompt" placeholder="音乐描述：年会欢快背景音乐，中国风">
+      <input type="text" id="musicLyrics" placeholder="歌词（选填）：新年好呀新年好呀" style="margin-top:8px;">
+      <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+        <span>时长：</span>
+        <select id="musicDuration" style="padding:8px;border-radius:6px;border:1px solid #d1d5db;">
+          <option value="30">30 秒</option>
+          <option value="60">60 秒</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="generateMusic()">🎵 生成音乐</button>
+      <div id="musicResult" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+
+  
+  <div id="section-redpacket" class="section">
+    <div class="card"><h3>🧧 红包雨控制</h3>
+      <p style="color:#6b7280;margin-bottom:12px;">开启后大屏飘落红包，手机端点击抢红包</p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="number" id="rpCount" value="20" min="5" max="50" style="width:100px;margin-bottom:0;" placeholder="红包数量">
+        <input type="number" id="rpDuration" value="15" min="5" max="30" style="width:100px;margin-bottom:0;" placeholder="持续秒数">
+        <button class="btn btn-warning" onclick="startRedpacket()">🧧 发射红包雨</button>
+        <button class="btn btn-danger" onclick="stopRedpacket()">⏹ 停止</button>
+      </div>
+    </div>
+    <div class="card"><h3>📺 投屏页面</h3>
+      <p>红包雨大屏：<a href="/screen/index.html" target="_blank" style="color:#4f46e5;">/screen/index.html</a></p>
+    </div>
+  </div>
+
+<div id="section-shakerace" class="section">
+    <div class="card"><h3>📳 摇一摇赛跑控制</h3>
+      <p style="color:#6b7280;margin-bottom:12px;">手机扫码进入游戏 → 摇一摇赛跑，管理员点击开始后全场竞速</p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="number" id="shakeTarget" value="30" min="10" max="100" style="width:100px;margin-bottom:0;" placeholder="摇动次数">
+        <button class="btn btn-primary" onclick="startShakeRace()">🏁 开始赛跑</button>
+        <button class="btn btn-danger" onclick="resetShakeRace()">🔄 重置</button>
+      </div>
+      <div id="shakeStatus" style="margin-top:12px;"></div>
+    </div>
+    <div class="card"><h3>📺 投屏页面</h3>
+      <p>赛跑大屏：<a href="/screen/index.html" target="_blank" style="color:#4f46e5;">/screen/index.html</a></p>
+    </div>
+  </div>
+
+<div id="section-data" class="section">
+    <div class="card"><h3>📋 中奖记录</h3>
+      <div id="winnersData"></div>
+    </div>
+    <div class="card"><h3>🎮 游戏排行</h3>
+      <div id="gameData"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+const ADMIN_TOKEN = 'nianhui-admin-2026';
+
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+async function get(p) { const r = await fetch(API + '/api' + p); return r.json(); }
+async function post(p, b) {
+  const r = await fetch(API + '/api' + p, { method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':ADMIN_TOKEN}, body:JSON.stringify(b) });
+  return r.json();
+}
+
+function toast(msg, ok=true) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (ok ? 'toast-success' : 'toast-error');
+  setTimeout(() => t.className = '', 2500);
+}
+
+// 导航
+$$('.sidebar a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    $$('.sidebar a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    $$('.section').forEach(s => s.classList.remove('active'));
+    const sec = $('#section-' + a.dataset.section);
+    if (sec) sec.classList.add('active');
+    loadSection(a.dataset.section);
+  });
+});
+
+function loadSection(section) {
+  if (section === 'overview') loadOverview();
+  if (section === 'features') loadFeatureToggles();
+  if (section === 'lottery') loadLottery();
+  if (section === 'messages') loadMessages();
+  if (section === 'data') loadData();
+  if (section === 'video' || section === 'music' || section === 'shakerace' || section === 'redpacket') {} // 无需预加载
+}
+
+async function loadOverview() {
+  const [wall, lottery, game] = await Promise.all([get('/wall/list'), get('/lottery/state'), get('/game/ranks')]);
+  $('#statWall').textContent = wall.data ? wall.data.length : 0;
+  $('#statPool').textContent = lottery.data ? lottery.data.poolCount : 0;
+  $('#statWinners').textContent = lottery.data ? lottery.data.winnersCount : 0;
+  $('#statPlayers').textContent = game.data ? game.data.length : 0;
+}
+
+async function loadLottery() {
+  const state = await get('/lottery/state');
+  if (state.code !== 0) return;
+  const d = state.data;
+  $('#btnToggle').textContent = d.isActive ? '关闭抽奖' : '开启抽奖';
+
+  const prizes = d.prizes || [];
+  const div = $('#prizeList');
+  div.innerHTML = prizes.map((p, i) =>
+    '<div class="prize-row"><input type="text" class="prizeName" value="' + esc(p.name || '') + '" placeholder="如：特等奖"><input type="text" class="prizeCount" value="' + (p.count || 1) + '" placeholder="数量" style="width:80px;"><button class="btn btn-danger" onclick="removePrize(' + i + ')">删除</button></div>'
+  ).join('');
+}
+
+async function addPrize() {
+  const div = $('#prizeList');
+  div.innerHTML += '<div class="prize-row"><input type="text" class="prizeName" placeholder="如：特等奖"><input type="text" class="prizeCount" value="1" placeholder="数量" style="width:80px;"><button class="btn btn-danger" onclick="event.target.parentElement.remove()">删除</button></div>';
+}
+
+function removePrize(i) { /* handled inline */ }
+
+async function savePrizes() {
+  const rows = $$('.prize-row');
+  const prizes = [];
+  rows.forEach(r => {
+    const name = r.querySelector('.prizeName').value;
+    const count = parseInt(r.querySelector('.prizeCount').value) || 1;
+    if (name) prizes.push({ name, count });
+  });
+  const res = await post('/lottery/admin/prizes', { prizes });
+  if (res.code === 0) toast('奖项已保存 (' + prizes.length + ' 个)');
+}
+
+async function importNames() {
+  const text = $('#lotteryNames').value.trim();
+  if (!text) return toast('请输入名单', false);
+  const names = text.split('\n').filter(l => l.trim()).map(l => {
+    const parts = l.split(',');
+    return { name: parts[0].trim(), dept: parts[1] ? parts[1].trim() : '' };
+  });
+  const res = await post('/lottery/admin/import', { names });
+  if (res.code === 0) toast('已导入 ' + res.data.count + ' 人');
+}
+
+async function setBlacklist() {
+  const text = $('#blacklistInput').value.trim();
+  const names = text ? text.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const res = await post('/lottery/admin/blacklist', { names });
+  if (res.code === 0) toast('黑名单已更新 (' + names.length + ' 人)');
+}
+
+async function toggleLottery() {
+  const res = await post('/lottery/admin/toggle');
+  if (res.code === 0) {
+    toast(res.data.isActive ? '抽奖已开启' : '抽奖已关闭');
+    loadLottery();
+  }
+}
+
+async function doDraw() {
+  const count = parseInt($('#drawCount').value) || 1;
+  const res = await post('/lottery/draw', { count });
+  if (res.code !== 0) return toast(res.msg, false);
+  const winners = res.data.winners;
+  let html = '<h4 style="color:#10b981;">🎉 中奖名单：</h4>';
+  winners.forEach(w => {
+    html += '<div style="padding:8px;background:#f0fdf4;margin:4px 0;border-radius:6px;"><strong>' + esc(w.name) + '</strong> - ' + esc(w.prize.name || w.prize) + '<br><em>' + esc(w.message || '') + '</em></div>';
+  });
+  $('#drawResult').innerHTML = html;
+}
+
+async function resetLottery() {
+  if (!confirm('确定要重置所有抽奖数据？此操作不可恢复！')) return;
+  await post('/lottery/admin/reset');
+  toast('已重置');
+  loadLottery();
+}
+
+async function loadMessages() {
+  const res = await get('/wall/list');
+  if (res.code !== 0) return;
+  const msgs = res.data || [];
+  $('#msgList').innerHTML = msgs.length === 0 ? '<p style="color:#888;">暂无留言</p>' :
+    '<table class="table"><tr><th>时间</th><th>昵称</th><th>内容</th><th>点赞</th></tr>' +
+    msgs.map(m => '<tr><td>' + new Date(m.time).toLocaleString('zh-CN') + '</td><td>' + esc(m.nickname) + '</td><td>' + esc(m.text) + '</td><td>❤ ' + (m.likes || 0) + '</td></tr>').join('') +
+    '</table>';
+}
+
+async function loadData() {
+  const [winners, ranks] = await Promise.all([get('/lottery/winners'), get('/game/ranks')]);
+  const wd = winners.data || [];
+  $('#winnersData').innerHTML = wd.length === 0 ? '<p style="color:#888;">暂无中奖记录</p>' :
+    '<table class="table"><tr><th>时间</th><th>姓名</th><th>奖项</th><th>寄语</th></tr>' +
+    wd.map(w => '<tr><td>' + new Date(w.time).toLocaleString('zh-CN') + '</td><td><strong>' + esc(w.name) + '</strong></td><td>' + esc(w.prize.name || w.prize) + '</td><td><em>' + esc(w.message || '') + '</em></td></tr>').join('') +
+    '</table>';
+  const rd = ranks.data || [];
+  $('#gameData').innerHTML = rd.length === 0 ? '<p style="color:#888;">暂无游戏记录</p>' :
+    '<table class="table"><tr><th>排名</th><th>玩家</th><th>得分</th></tr>' +
+    rd.map((r, i) => '<tr><td>' + (['🥇','🥈','🥉'][i] || (i+1)) + '</td><td>' + esc(r.name) + '</td><td>' + r.score + ' 分</td></tr>').join('') +
+    '</table>';
+}
+
+async function loadFeatureToggles() {
+  const res = await get('/settings');
+  if (res.code !== 0) return;
+  const features = res.data.features || {};
+  const list = document.getElementById('toggleList');
+  const labels = { wenan: '文稿创作', avatar: '形象名片', wall: '留言墙', lottery: 'AI抽奖', game: '暖场游戏', video: '视频生成', music: '音乐生成' };
+  let html = '';
+  for (const [key, label] of Object.entries(labels)) {
+    const checked = features[key] !== false ? 'checked' : '';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee;"><span style="font-size:15px;">' + label + '</span><label class="switch"><input type="checkbox" ' + checked + ' data-key="' + key + '"><span class="slider"></span></label></div>';
+  }
+  html += '<style>.switch{position:relative;display:inline-block;width:48px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:26px;transition:.3s}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}input:checked+.slider{background:#4f46e5}input:checked+.slider:before{transform:translateX(22px)}</style>';
+  list.innerHTML = html;
+}
+
+async function saveFeatures() {
+  const checks = document.querySelectorAll('#toggleList input[type=checkbox]');
+  const features = {};
+  checks.forEach(cb => { features[cb.dataset.key] = cb.checked; });
+  const res = await post('/settings', { features });
+  if (res.code === 0) toast('功能开关已保存');
+}
+
+async function drawRandomMessage() {
+  const res = await post('/wall/random');
+  if (res.code !== 0) return toast(res.msg, false);
+  const w = res.data.winner;
+  document.getElementById('randomDrawResult').innerHTML = '<div style="padding:16px;background:#fef3c7;border-radius:12px;margin-top:8px;"><strong>🎁 幸运留言</strong><br>👤 ' + esc(w.nickname) + '<br>💬 ' + esc(w.text) + '<br>🎉 ' + esc(res.data.giftMsg || '恭喜中奖！') + '</div>';
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
+
+// 初始化
+loadOverview();
+
+async function startRedpacket(){
+  var count=parseInt(document.getElementById("rpCount").value)||20;
+  var duration=parseInt(document.getElementById("rpDuration").value)||15;
+  var res=await post("/redpacket/start",{count:count,duration:duration});
+  if(res.code===0)toast("红包雨已发射！"+res.data.count+"个红包");
+}
+async function stopRedpacket(){
+  await post("/redpacket/stop",{});toast("已停止");
+}
+
+async function startShakeRace(){
+  var target=parseInt(document.getElementById("shakeTarget").value)||30;
+  var res=await post("/game/shake/start",{targetShakes:target});
+  if(res.code===0){
+    toast("赛跑已开始！目标："+target+"次摇动");
+    document.getElementById("shakeStatus").innerHTML='<div style="padding:12px;background:#f0fdf4;border-radius:8px;margin-top:8px;">比赛进行中！ raceId: <code>'+esc(res.data.raceId)+'</code></div>';
+  }
+}
+async function resetShakeRace(){
+  await post("/game/shake/reset",{});
+  toast("已重置");
+  document.getElementById("shakeStatus").innerHTML="";
+}
+
+async function generateVideo() {
+  const prompt = document.getElementById('videoPrompt').value.trim();
+  if (!prompt) return toast('请输入视频描述', false);
+  const duration = parseInt(document.getElementById('videoDuration').value);
+  const res = await post('/video/generate', { prompt, duration });
+  if (res.code === 0) {
+    document.getElementById('videoResult').innerHTML = '<div style="padding:12px;background:#f0fdf4;border-radius:8px;margin-top:8px;">✅ 任务已提交！<br>taskId: <code>' + esc(res.data.taskId || '处理中...') + '</code><br>provider: ' + esc(res.data.provider || 'mock') + '</div>';
+  } else {
+    toast(res.msg, false);
+  }
+}
+
+async function generateMusic() {
+  const prompt = document.getElementById('musicPrompt').value.trim();
+  if (!prompt) return toast('请输入音乐描述', false);
+  const lyrics = document.getElementById('musicLyrics').value.trim();
+  const duration = parseInt(document.getElementById('musicDuration').value);
+  const res = await post('/music/generate', { prompt, lyrics, duration });
+  if (res.code === 0) {
+    document.getElementById('musicResult').innerHTML = '<div style="padding:12px;background:#f0fdf4;border-radius:8px;margin-top:8px;">✅ 任务已提交！<br>taskId: <code>' + esc(res.data.taskId || '处理中...') + '</code><br>provider: ' + esc(res.data.provider || 'mock') + '</div>';
+  } else {
+    toast(res.msg, false);
+  }
+}
+</script>
+</body>
+</html>

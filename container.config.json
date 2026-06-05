@@ -1,0 +1,19 @@
+﻿{
+  "name": "express-ld5z",
+  "version": "1.0.0",
+  "description": "年会 AI 工具箱",
+  "port": 80,
+  "hasAccessToPublic": true,
+  "cpu": 1,
+  "mem": 2,
+  "minNum": 0,
+  "maxNum": 5,
+  "policyType": "cpu",
+  "policyThreshold": 60,
+  "envParams": {
+    "ADMIN_TOKEN": "nianhui-admin-2026",
+    "WECHAT_SCOPE": "snsapi_base"
+  },
+  "customLogs": "stdout",
+  "initialDelaySeconds": 2
+}
