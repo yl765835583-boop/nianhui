@@ -3,6 +3,7 @@ const adminAuth = require('../middleware/adminAuth');
 const storage = require('../services/storage');
 const { chatLLM } = require('../services/ai');
 const { ok, fail } = require('../utils/helpers');
+const ws = require('../services/socket');
 
 // 获取候选名单（用于大屏滚动）
 router.get('/pool', (req, res) => {
@@ -41,6 +42,7 @@ router.post('/admin/import', (req, res) => {
   data.winners = [];
   data.drawn = [];
   storage.saveLottery(data);
+  ws.emit('lottery:updated');
   res.json(ok({ count: data.pool.length }));
 });
 
@@ -50,6 +52,7 @@ router.post('/admin/prizes', (req, res) => {
   const data = storage.getLottery();
   data.prizes = prizes || [];
   storage.saveLottery(data);
+  ws.emit('lottery:updated');
   res.json(ok(data.prizes));
 });
 
@@ -59,6 +62,7 @@ router.post('/admin/blacklist', (req, res) => {
   const data = storage.getLottery();
   data.blacklist = names || [];
   storage.saveLottery(data);
+  ws.emit('lottery:updated');
   res.json(ok(data.blacklist));
 });
 
@@ -70,6 +74,7 @@ router.post('/admin/toggle', (req, res) => {
     data.currentPrize = data.prizes[0];
   }
   storage.saveLottery(data);
+  ws.emit('lottery:stateChanged', { isActive: data.isActive, currentPrize: data.currentPrize });
   res.json(ok({ isActive: data.isActive, currentPrize: data.currentPrize }));
 });
 
@@ -116,6 +121,7 @@ router.post('/draw', async (req, res) => {
     results.push(record);
   }
   storage.saveLottery(data);
+  ws.emit('lottery:updated', { winners: results });
   res.json(ok({ winners: results, remaining: data.pool.length - data.drawn.length }));
 });
 
@@ -136,6 +142,7 @@ router.post('/admin/reset', (req, res) => {
     isActive: false,
     currentPrize: null,
   });
+  ws.emit('lottery:updated');
   res.json(ok(null, '已重置'));
 });
 

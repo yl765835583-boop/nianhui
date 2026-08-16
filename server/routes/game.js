@@ -78,6 +78,7 @@ router.post('/quiz/submit', async (req, res) => {
     gameData.teams[team] = (gameData.teams[team] || 0) + score;
   }
   storage.saveGame(gameData);
+  ws.emit('game:ranksUpdated');
 
   // AI 点评
   let comment = '';

@@ -3,6 +3,7 @@ const storage = require('../services/storage');
 const sensitive = require('../middleware/sensitive');
 const { chatLLM } = require('../services/ai');
 const { ok, fail } = require('../utils/helpers');
+const ws = require('../services/socket');
 
 // 已抽中的留言 ID 集合（内存 + 文件持久化）
 let drawnIds = new Set(storage.getDrawnMessages() || []);
@@ -34,6 +35,7 @@ router.post('/send', async (req, res) => {
     original: text.trim(),
     nickname: nickname || '匿名',
   });
+  ws.emit('wall:updated');
   res.json(ok(msg));
 });
 
@@ -45,6 +47,7 @@ router.get('/list', (req, res) => {
 router.post('/like/:id', (req, res) => {
   const msg = storage.likeMessage(req.params.id);
   if (!msg) return res.json(fail('留言不存在'));
+  ws.emit('wall:updated');
   res.json(ok({ likes: msg.likes }));
 });
 
@@ -71,6 +74,7 @@ router.post('/random', async (req, res) => {
   } catch {
     /* 颁奖词失败时保持空串 */
   }
+  ws.emit('wall:random', { winner: pick, giftMsg: giftMsg.slice(0, 100) });
   res.json(ok({ winner: pick, giftMsg: giftMsg.slice(0, 100), remaining: available.length - 1 }));
 });
 
@@ -78,6 +82,7 @@ router.post('/random', async (req, res) => {
 router.post('/random/reset', (req, res) => {
   drawnIds.clear();
   saveDrawnIds();
+  ws.emit('wall:updated');
   res.json(ok(null, '已重置，所有留言可重新参与抽奖'));
 });
 
