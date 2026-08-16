@@ -20,7 +20,7 @@ setTimeout(async () => {
   const res = await fetch('http://localhost:3456/api/redpacket/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ count: 5, duration: 5 })
+    body: JSON.stringify({ count: 5, duration: 5 }),
   });
   const data = await res.json();
   console.log('📡 API 返回: code=' + data.code + ', count=' + (data.data ? data.data.count : '?'));

@@ -23,7 +23,14 @@ router.post('/persona', async (req, res) => {
   if (!nickname) return res.json(fail('请填写昵称'));
 
   try {
-    const prompt = '请为以下同事生成年度人设总结。昵称：' + nickname + '，岗位：' + (role || '员工') + '，部门：' + (department || '') + '。请生成年度关键词、趣味标签、年度总结。';
+    const prompt =
+      '请为以下同事生成年度人设总结。昵称：' +
+      nickname +
+      '，岗位：' +
+      (role || '员工') +
+      '，部门：' +
+      (department || '') +
+      '。请生成年度关键词、趣味标签、年度总结。';
     const text = await chatLLM(prompt, { style: '温情走心' });
     const image = await generateImage(nickname + ' 人设卡片 ' + role, { style: '年会礼服' });
     const record = storage.addAvatar({ type: 'persona', nickname, role, department, text, image });

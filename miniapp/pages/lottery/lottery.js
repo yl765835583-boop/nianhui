@@ -6,7 +6,7 @@ Page({
     poolCount: 0,
     winnersCount: 0,
     winners: [],
-    loading: true
+    loading: true,
   },
   onLoad() {
     this.refresh();
@@ -27,7 +27,7 @@ Page({
           currentPrize: res.data.currentPrize,
           poolCount: res.data.poolCount,
           winnersCount: res.data.winnersCount,
-          loading: false
+          loading: false,
         });
       }
     } catch {}
@@ -43,5 +43,5 @@ Page({
   onPullDownRefresh() {
     this.refresh();
     wx.stopPullDownRefresh();
-  }
+  },
 });

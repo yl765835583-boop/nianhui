@@ -1,4 +1,4 @@
-﻿const router = require('express').Router();
+const router = require('express').Router();
 const storage = require('../services/storage');
 const { chatLLM, synthesizeVoice } = require('../services/ai');
 const { ok, fail } = require('../utils/helpers');
@@ -29,15 +29,17 @@ router.post('/quiz/generate', async (req, res) => {
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].question) {
-        quiz = parsed.map((q, i) => ({
+        quiz = parsed.map((q) => ({
           question: q.question,
-          options: q.options || ['A','B','C','D'],
+          options: q.options || ['A', 'B', 'C', 'D'],
           answer: q.answer || 'A',
-          difficulty: q.difficulty || diff
+          difficulty: q.difficulty || diff,
         }));
       }
     }
-  } catch {}
+  } catch {
+    /* AI 返回无效，降级到 mock */
+  }
 
   // 2. AI 失败或结果无效，降级到 mock
   if (!quiz || quiz.length === 0) {
@@ -47,7 +49,9 @@ router.post('/quiz/generate', async (req, res) => {
   const gameData = storage.getGame();
   gameData.quiz = quiz;
   storage.saveGame(gameData);
-  res.json(ok(quiz.map(q => ({ question: q.question, options: q.options, difficulty: q.difficulty }))));
+  res.json(
+    ok(quiz.map((q) => ({ question: q.question, options: q.options, difficulty: q.difficulty })))
+  );
 });
 
 // 提交答案 & 判题（支持单人/组队）
@@ -57,7 +61,7 @@ router.post('/quiz/submit', async (req, res) => {
   let score = 0;
   const results = [];
 
-  for (const a of (answers || [])) {
+  for (const a of answers || []) {
     const q = gameData.quiz[a.index];
     const correct = q && q.answer === a.answer;
     if (correct) score++;
@@ -67,7 +71,7 @@ router.post('/quiz/submit', async (req, res) => {
   if (!gameData.scores) gameData.scores = {};
   if (!gameData.teams) gameData.teams = {};
 
-  const key = team ? ('team_' + team) : (nickname || '匿名');
+  const key = team ? 'team_' + team : nickname || '匿名';
   const current = gameData.scores[key] || 0;
   gameData.scores[key] = Math.max(current, score);
   if (team) {
@@ -77,8 +81,21 @@ router.post('/quiz/submit', async (req, res) => {
 
   // AI 点评
   let comment = '';
-  try { comment = await chatLLM('为得分' + score + '/' + (answers ? answers.length : 0) + '的年会答题选手写一句20字以内的趣味点评', { style: '幽默轻松' }); } catch {}
-  res.json(ok({ score, total: answers ? answers.length : 0, results, comment: comment.slice(0, 100) }));
+  try {
+    comment = await chatLLM(
+      '为得分' +
+        score +
+        '/' +
+        (answers ? answers.length : 0) +
+        '的年会答题选手写一句20字以内的趣味点评',
+      { style: '幽默轻松' }
+    );
+  } catch {
+    /* 点评失败时保持空串 */
+  }
+  res.json(
+    ok({ score, total: answers ? answers.length : 0, results, comment: comment.slice(0, 100) })
+  );
 });
 
 // 排行榜（含组队）
@@ -109,8 +126,10 @@ function getPinyins(ch) {
     if (!results || !results.length) return [];
     const arr = results[0] || [];
     // 去掉声调：NFD分解后去掉组合变音符号
-    return arr.map(p => p.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase());
-  } catch { return []; }
+    return arr.map((p) => p.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase());
+  } catch {
+    return [];
+  }
 }
 
 // 判断两个字符是否同音（含多音字匹配）
@@ -118,9 +137,8 @@ function isHomophone(a, b) {
   const pa = getPinyins(a);
   const pb = getPinyins(b);
   if (pa.length === 0 || pb.length === 0) return a === b;
-  return pa.some(x => pb.includes(x));
+  return pa.some((x) => pb.includes(x));
 }
-
 
 router.post('/idiom/start', (req, res) => {
   idiomState = { chain: [], prevWord: '', started: true };
@@ -133,37 +151,70 @@ router.post('/idiom/check', async (req, res) => {
   // 如果服务端有状态，用服务端的 prevWord
   const serverPrev = idiomState.started ? idiomState.prevWord : '';
   const actualPrev = serverPrev || prevWord || '';
-  
+
   if (actualPrev && word) {
     const prevLast = actualPrev.slice(-1);
     const wordFirst = word[0];
     if (!isHomophone(prevLast, wordFirst)) {
       const pp = getPinyins(prevLast).join('/') || '?';
       const wp = getPinyins(wordFirst).join('/') || '?';
-      return res.json(ok({ valid: false, reason: '接龙失败！上一个字"' + prevLast + '"（' + pp + '），你接的是"' + wordFirst + '"（' + wp + '）开头，不同音！' }));
+      return res.json(
+        ok({
+          valid: false,
+          reason:
+            '接龙失败！上一个字"' +
+            prevLast +
+            '"（' +
+            pp +
+            '），你接的是"' +
+            wordFirst +
+            '"（' +
+            wp +
+            '）开头，不同音！',
+        })
+      );
     }
   }
   if (!word || word.length < 2) {
     return res.json(ok({ valid: false, reason: '这不是有效的成语' }));
   }
-  
+
   // 更新服务端状态
   if (idiomState.started || !actualPrev) {
     idiomState.chain.push(word);
     idiomState.prevWord = word;
     idiomState.started = true;
   }
-  
+
   // AI 提示下家可接的成语
   let hint = '';
   const diff = difficulty || 'medium';
   const hintCount = diff === 'easy' ? 5 : diff === 'hard' ? 1 : 3;
-  try { hint = await chatLLM('请以"' + (word ? word.slice(-1) : '年') + '"或其同音字开头，给出' + hintCount + '个常见成语（同音即可），逗号分隔', { style: '幽默轻松' }); } catch {}
-  
+  try {
+    hint = await chatLLM(
+      '请以"' +
+        (word ? word.slice(-1) : '年') +
+        '"或其同音字开头，给出' +
+        hintCount +
+        '个常见成语（同音即可），逗号分隔',
+      { style: '幽默轻松' }
+    );
+  } catch {
+    /* 提示失败时保持空串 */
+  }
+
   // 广播给所有人
   ws.emit('idiom:state', idiomState);
-  
-  res.json(ok({ valid: true, hint: hint.slice(0, 120) || '再接再厉！', difficulty: diff, chain: idiomState.chain, prevWord: idiomState.prevWord }));
+
+  res.json(
+    ok({
+      valid: true,
+      hint: hint.slice(0, 120) || '再接再厉！',
+      difficulty: diff,
+      chain: idiomState.chain,
+      prevWord: idiomState.prevWord,
+    })
+  );
 });
 
 router.post('/idiom/reset', (req, res) => {
@@ -181,7 +232,12 @@ router.post('/feihua/check', (req, res) => {
   const { word, keyword } = req.body;
   if (!word || !keyword) return res.json(fail('参数错误'));
   const valid = word.includes(keyword);
-  res.json(ok({ valid, reason: valid ? '正确！含有"' + keyword + '"' : '诗句中不含关键字"' + keyword + '"' }));
+  res.json(
+    ok({
+      valid,
+      reason: valid ? '正确！含有"' + keyword + '"' : '诗句中不含关键字"' + keyword + '"',
+    })
+  );
 });
 
 // ===== 语音变声 =====
@@ -199,55 +255,144 @@ router.post('/voice/transform', async (req, res) => {
 // ===== Mock 题库（含难度）=====
 function generateMockQuiz(type, count, difficulty) {
   const banks = {
-    '企业文化': {
+    企业文化: {
       easy: [
-        { question: '公司的名称是什么？', options: ['A公司','B公司','C公司','D公司'], answer: 'A', difficulty:'easy' },
-        { question: '公司口号是？', options: ['创新至上','客户第一','品质为本','以上都是'], answer: 'D', difficulty:'easy' },
+        {
+          question: '公司的名称是什么？',
+          options: ['A公司', 'B公司', 'C公司', 'D公司'],
+          answer: 'A',
+          difficulty: 'easy',
+        },
+        {
+          question: '公司口号是？',
+          options: ['创新至上', '客户第一', '品质为本', '以上都是'],
+          answer: 'D',
+          difficulty: 'easy',
+        },
       ],
       medium: [
-        { question: '公司核心价值观是？', options: ['创新协作诚信共赢','速度规模利润扩张','自由开放平等分享','务实高效进取担当'], answer: 'A', difficulty:'medium' },
-        { question: '公司成立于哪一年？', options: ['2010','2012','2015','2018'], answer: 'B', difficulty:'medium' },
+        {
+          question: '公司核心价值观是？',
+          options: ['创新协作诚信共赢', '速度规模利润扩张', '自由开放平等分享', '务实高效进取担当'],
+          answer: 'A',
+          difficulty: 'medium',
+        },
+        {
+          question: '公司成立于哪一年？',
+          options: ['2010', '2012', '2015', '2018'],
+          answer: 'B',
+          difficulty: 'medium',
+        },
       ],
       hard: [
-        { question: '公司第一任CEO是谁？', options: ['张总','李总','王总','陈总'], answer: 'A', difficulty:'hard' },
-        { question: '公司上市年份？', options: ['2018','2019','2020','未上市'], answer: 'D', difficulty:'hard' },
-      ]
+        {
+          question: '公司第一任CEO是谁？',
+          options: ['张总', '李总', '王总', '陈总'],
+          answer: 'A',
+          difficulty: 'hard',
+        },
+        {
+          question: '公司上市年份？',
+          options: ['2018', '2019', '2020', '未上市'],
+          answer: 'D',
+          difficulty: 'hard',
+        },
+      ],
     },
-    '新春灯谜': {
+    新春灯谜: {
       easy: [
-        { question: '大年初一（打一城市名）', options: ['北京','上海','广州','深圳'], answer: 'C', difficulty:'easy' },
-        { question: '春节放什么？', options: ['鞭炮','烟花','音乐','以上都是'], answer: 'D', difficulty:'easy' },
+        {
+          question: '大年初一（打一城市名）',
+          options: ['北京', '上海', '广州', '深圳'],
+          answer: 'C',
+          difficulty: 'easy',
+        },
+        {
+          question: '春节放什么？',
+          options: ['鞭炮', '烟花', '音乐', '以上都是'],
+          answer: 'D',
+          difficulty: 'easy',
+        },
       ],
       medium: [
-        { question: '春节前夕（打一字）', options: ['庆','祝','春','联'], answer: 'A', difficulty:'medium' },
-        { question: '除夕守岁数钟声（打一商业用语）', options: ['年终盘点','年终总结','年终奖','年末核算'], answer: 'A', difficulty:'medium' },
+        {
+          question: '春节前夕（打一字）',
+          options: ['庆', '祝', '春', '联'],
+          answer: 'A',
+          difficulty: 'medium',
+        },
+        {
+          question: '除夕守岁数钟声（打一商业用语）',
+          options: ['年终盘点', '年终总结', '年终奖', '年末核算'],
+          answer: 'A',
+          difficulty: 'medium',
+        },
       ],
       hard: [
-        { question: '大年初一（打《红楼梦》人名）', options: ['元春','迎春','探春','惜春'], answer: 'A', difficulty:'hard' },
-        { question: '守岁（打《论语》一句）', options: ['终夜不寝','学而时习','有朋远来','三省吾身'], answer: 'A', difficulty:'hard' },
-      ]
+        {
+          question: '大年初一（打《红楼梦》人名）',
+          options: ['元春', '迎春', '探春', '惜春'],
+          answer: 'A',
+          difficulty: 'hard',
+        },
+        {
+          question: '守岁（打《论语》一句）',
+          options: ['终夜不寝', '学而时习', '有朋远来', '三省吾身'],
+          answer: 'A',
+          difficulty: 'hard',
+        },
+      ],
     },
-    '脑筋急转弯': {
+    脑筋急转弯: {
       easy: [
-        { question: '什么布剪不断？', options: ['瀑布','棉布','丝绸','麻布'], answer: 'A', difficulty:'easy' },
-        { question: '什么人不用电？', options: ['缅甸人','泰国人','中国人','日本人'], answer: 'A', difficulty:'easy' },
+        {
+          question: '什么布剪不断？',
+          options: ['瀑布', '棉布', '丝绸', '麻布'],
+          answer: 'A',
+          difficulty: 'easy',
+        },
+        {
+          question: '什么人不用电？',
+          options: ['缅甸人', '泰国人', '中国人', '日本人'],
+          answer: 'A',
+          difficulty: 'easy',
+        },
       ],
       medium: [
-        { question: '什么东西越洗越脏？', options: ['水','衣服','抹布','手'], answer: 'A', difficulty:'medium' },
-        { question: '什么东西明明是别人的你却用的更多？', options: ['名字','手机','钱','时间'], answer: 'A', difficulty:'medium' },
+        {
+          question: '什么东西越洗越脏？',
+          options: ['水', '衣服', '抹布', '手'],
+          answer: 'A',
+          difficulty: 'medium',
+        },
+        {
+          question: '什么东西明明是别人的你却用的更多？',
+          options: ['名字', '手机', '钱', '时间'],
+          answer: 'A',
+          difficulty: 'medium',
+        },
       ],
       hard: [
-        { question: '有一种东西上升时同时会下降下降时同时会上升是什么？', options: ['跷跷板','电梯','温度计','血压'], answer: 'A', difficulty:'hard' },
-        { question: '一头公牛加一头母牛猜三个字？', options: ['两头牛','一对牛','牛牛牛','不知道'], answer: 'A', difficulty:'hard' },
-      ]
-    }
+        {
+          question: '有一种东西上升时同时会下降下降时同时会上升是什么？',
+          options: ['跷跷板', '电梯', '温度计', '血压'],
+          answer: 'A',
+          difficulty: 'hard',
+        },
+        {
+          question: '一头公牛加一头母牛猜三个字？',
+          options: ['两头牛', '一对牛', '牛牛牛', '不知道'],
+          answer: 'A',
+          difficulty: 'hard',
+        },
+      ],
+    },
   };
 
   const typeBank = banks[type] || banks['企业文化'];
   const all = [...(typeBank[difficulty] || typeBank['medium']), ...(typeBank['easy'] || [])];
   return all.slice(0, Math.min(count, all.length));
 }
-
 
 // ===== 摇一摇赛跑 =====
 const shakeRaces = {}; // raceId -> { players: { nickname: { shakes, progress } }, active, targetShakes }
@@ -309,7 +454,7 @@ router.get('/shake/state', (req, res) => {
 router.post('/shake/reset', (req, res) => {
   const { raceId } = req.body;
   if (raceId && shakeRaces[raceId]) delete shakeRaces[raceId];
-  else Object.keys(shakeRaces).forEach(k => delete shakeRaces[k]);
+  else Object.keys(shakeRaces).forEach((k) => delete shakeRaces[k]);
   ws.emit('shake:reset');
   res.json(ok(null, '已重置'));
 });

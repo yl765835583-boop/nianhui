@@ -1,10 +1,18 @@
 ﻿const API = '';
 
-function $(sel) { return document.querySelector(sel); }
-function $$(sel) { return document.querySelectorAll(sel); }
+function $(sel) {
+  return document.querySelector(sel);
+}
+function $$(sel) {
+  return document.querySelectorAll(sel);
+}
 
-function show(el) { el.style.display = ''; }
-function hide(el) { el.style.display = 'none'; }
+function show(el) {
+  el.style.display = '';
+}
+function hide(el) {
+  el.style.display = 'none';
+}
 
 async function get(path) {
   const r = await fetch(API + '/api' + path);
@@ -15,7 +23,7 @@ async function post(path, body) {
   const r = await fetch(API + '/api' + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
   return r.json();
 }
@@ -23,7 +31,9 @@ async function post(path, body) {
 function poll(path, interval, callback) {
   callback();
   setInterval(async () => {
-    try { callback(); } catch {}
+    try {
+      callback();
+    } catch {}
   }, interval);
 }
 

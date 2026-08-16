@@ -11,7 +11,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/screen', express.static(path.join(__dirname, '..', 'screen')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
-app.use('/mobile', express.static(path.join(__dirname, '..', 'mobile'), { setHeaders: (res) => { res.set('Cache-Control', 'no-store, no-cache, must-revalidate'); res.set('Pragma', 'no-cache'); } }));
+app.use(
+  '/mobile',
+  express.static(path.join(__dirname, '..', 'mobile'), {
+    setHeaders: (res) => {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+    },
+  })
+);
 app.use('/uploads', express.static(config.upload.dir));
 
 app.use(require('./middleware/auth'));

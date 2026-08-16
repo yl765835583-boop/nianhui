@@ -18,15 +18,20 @@ router.post('/start', (req, res) => {
     if (i < Math.ceil(packetCount * 0.1)) amount = (Math.random() * 50 + 10).toFixed(2);
     rainState.packets.push({
       id: 'rp_' + Date.now().toString(36) + '_' + i,
-      x: Math.random() * 90 + 5,         // 横向位置 %
+      x: Math.random() * 90 + 5, // 横向位置 %
       delay: Math.random() * (duration - 2), // 延迟出现（秒）
-      speed: Math.random() * 3 + 2,       // 下落速度
+      speed: Math.random() * 3 + 2, // 下落速度
       amount: parseFloat(amount),
-      claimed: false
+      claimed: false,
     });
   }
 
-  console.log('[RedPacket] 发射红包雨，count=' + packetCount + '，已连接客户端数=' + (ws.getIO() ? ws.getIO().engine.clientsCount : 0));
+  console.log(
+    '[RedPacket] 发射红包雨，count=' +
+      packetCount +
+      '，已连接客户端数=' +
+      (ws.getIO() ? ws.getIO().engine.clientsCount : 0)
+  );
   ws.emit('redpacket:start', { count: packetCount, duration });
   res.json(ok({ count: packetCount }));
 
@@ -34,7 +39,10 @@ router.post('/start', (req, res) => {
   setTimeout(() => {
     if (rainState.active) {
       rainState.active = false;
-      ws.emit('redpacket:end', { claimed: Object.keys(rainState.claimed).length, total: packetCount });
+      ws.emit('redpacket:end', {
+        claimed: Object.keys(rainState.claimed).length,
+        total: packetCount,
+      });
     }
   }, duration * 1000);
 });
@@ -45,35 +53,51 @@ router.post('/claim', (req, res) => {
   if (!rainState.active) return res.json(fail('红包雨已结束'));
 
   // 找一个还没被抢的红包
-  const packet = rainState.packets.find(p => !rainState.claimed[p.id]);
+  const packet = rainState.packets.find((p) => !rainState.claimed[p.id]);
   if (!packet) return res.json(fail('红包已被抢光啦'));
 
   const pid = packet.id;
-  rainState.claimed[pid] = { nickname: nickname || '匿名', amount: packet.amount, time: Date.now() };
+  rainState.claimed[pid] = {
+    nickname: nickname || '匿名',
+    amount: packet.amount,
+    time: Date.now(),
+  };
   ws.emit('redpacket:claimed', {
     packetId: pid,
     nickname: nickname || '匿名',
     amount: packet.amount,
-    remaining: rainState.totalCount - Object.keys(rainState.claimed).length
+    remaining: rainState.totalCount - Object.keys(rainState.claimed).length,
   });
-  console.log('[RedPacket] ' + (nickname || '匿名') + ' 抢到 ¥' + packet.amount.toFixed(2) + '，剩余 ' + (rainState.totalCount - Object.keys(rainState.claimed).length));
+  console.log(
+    '[RedPacket] ' +
+      (nickname || '匿名') +
+      ' 抢到 ¥' +
+      packet.amount.toFixed(2) +
+      '，剩余 ' +
+      (rainState.totalCount - Object.keys(rainState.claimed).length)
+  );
   res.json(ok({ amount: packet.amount }));
 });
 
 // 用户：通过 WebSocket 抢（实时性更好）
 router.post('/stop', (req, res) => {
   rainState.active = false;
-  ws.emit('redpacket:end', { claimed: Object.keys(rainState.claimed).length, total: rainState.totalCount });
+  ws.emit('redpacket:end', {
+    claimed: Object.keys(rainState.claimed).length,
+    total: rainState.totalCount,
+  });
   res.json(ok(null, '已停止'));
 });
 
 // 获取当前状态
 router.get('/state', (req, res) => {
-  res.json(ok({
-    active: rainState.active,
-    totalCount: rainState.totalCount,
-    claimedCount: Object.keys(rainState.claimed).length
-  }));
+  res.json(
+    ok({
+      active: rainState.active,
+      totalCount: rainState.totalCount,
+      claimedCount: Object.keys(rainState.claimed).length,
+    })
+  );
 });
 
 module.exports = router;

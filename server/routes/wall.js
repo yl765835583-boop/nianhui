@@ -1,10 +1,8 @@
-﻿const router = require('express').Router();
+const router = require('express').Router();
 const storage = require('../services/storage');
 const sensitive = require('../middleware/sensitive');
 const { chatLLM } = require('../services/ai');
 const { ok, fail } = require('../utils/helpers');
-const config = require('../config');
-const ws = require('../services/socket');
 
 // 已抽中的留言 ID 集合（内存 + 文件持久化）
 let drawnIds = new Set(storage.getDrawnMessages() || []);
@@ -22,11 +20,20 @@ router.post('/send', async (req, res) => {
 
   let polished = sensitive.filter(text.trim());
   try {
-    const result = await chatLLM('请润色以下年会留言，使其更有趣但保留原意（50字以内）：' + polished, { style: '幽默轻松' });
+    const result = await chatLLM(
+      '请润色以下年会留言，使其更有趣但保留原意（50字以内）：' + polished,
+      { style: '幽默轻松' }
+    );
     polished = result.slice(0, 200);
-  } catch {}
+  } catch {
+    /* 润色失败时用原文 */
+  }
 
-  const msg = storage.addMessage({ text: polished, original: text.trim(), nickname: nickname || '匿名' });
+  const msg = storage.addMessage({
+    text: polished,
+    original: text.trim(),
+    nickname: nickname || '匿名',
+  });
   res.json(ok(msg));
 });
 
@@ -45,7 +52,7 @@ router.post('/like/:id', (req, res) => {
 router.post('/random', async (req, res) => {
   const msgs = storage.getMessages();
   // 过滤掉已抽中的留言
-  const available = msgs.filter(m => !drawnIds.has(m.id));
+  const available = msgs.filter((m) => !drawnIds.has(m.id));
   if (available.length === 0) return res.json(fail('所有留言都已抽过奖了，请先重置'));
   const pick = available[Math.floor(Math.random() * available.length)];
   drawnIds.add(pick.id);
@@ -53,8 +60,17 @@ router.post('/random', async (req, res) => {
 
   let giftMsg = '';
   try {
-    giftMsg = await chatLLM('为留言"' + pick.text.slice(0, 50) + '"的发布者' + pick.nickname + '写一句年会礼品颁奖词（20字以内）', { style: '幽默轻松' });
-  } catch {}
+    giftMsg = await chatLLM(
+      '为留言"' +
+        pick.text.slice(0, 50) +
+        '"的发布者' +
+        pick.nickname +
+        '写一句年会礼品颁奖词（20字以内）',
+      { style: '幽默轻松' }
+    );
+  } catch {
+    /* 颁奖词失败时保持空串 */
+  }
   res.json(ok({ winner: pick, giftMsg: giftMsg.slice(0, 100), remaining: available.length - 1 }));
 });
 

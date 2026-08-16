@@ -1,6 +1,6 @@
-﻿const router = require('express').Router();
+const router = require('express').Router();
 const storage = require('../services/storage');
-const { ok, fail } = require('../utils/helpers');
+const { ok } = require('../utils/helpers');
 
 // 获取/更新全局设置
 router.get('/', (req, res) => {

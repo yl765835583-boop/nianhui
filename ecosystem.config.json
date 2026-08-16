@@ -1,15 +1,17 @@
 ﻿{
-  "apps": [{
-    "name": "nianhui-ai",
-    "script": "app.js",
-    "cwd": "./server",
-    "instances": 1,
-    "exec_mode": "fork",
-    "env": {
-      "NODE_ENV": "production",
-      "PORT": 3456
-    },
-    "log_date_format": "YYYY-MM-DD HH:mm:ss",
-    "max_memory_restart": "500M"
-  }]
+  "apps": [
+    {
+      "name": "nianhui-ai",
+      "script": "app.js",
+      "cwd": "./server",
+      "instances": 1,
+      "exec_mode": "fork",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3456
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "max_memory_restart": "500M"
+    }
+  ]
 }

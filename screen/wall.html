@@ -1,144 +1,213 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>年会留言墙 - 大屏展示</title>
-<link rel="stylesheet" href="css/style.css">
-<style>
-.message-scroll { animation-duration: 40s; }
-.message-scroll.paused { animation-play-state: paused; }
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="header">
-    <h1>💬 年会留言墙</h1>
-    <p class="subtitle">扫码发送你的新年祝福吧！</p>
-  </div>
-  <div class="wall" id="wall">
-    <div class="message-scroll" id="scroll"></div>
-  </div>
-  <div style="text-align:center;margin:10px 0;">
-    <button id="randomBtn" style="padding:10px 30px;font-size:18px;background:#f59e0b;color:#fff;border:none;border-radius:12px;cursor:pointer;" onclick="drawRandom()">🎁 随机抽留言送礼品</button>
-    <div id="randomResult" style="margin-top:12px;font-size:24px;background:rgba(255,255,255,0.08);border-radius:12px;padding:20px;display:none;"></div>
-  </div>
-  <script src="js/common.js"></script>
-<script>
-const scroll = $('#scroll');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>年会留言墙 - 大屏展示</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .message-scroll {
+        animation-duration: 40s;
+      }
+      .message-scroll.paused {
+        animation-play-state: paused;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>💬 年会留言墙</h1>
+        <p class="subtitle">扫码发送你的新年祝福吧！</p>
+      </div>
+      <div class="wall" id="wall">
+        <div class="message-scroll" id="scroll"></div>
+      </div>
+      <div style="text-align: center; margin: 10px 0">
+        <button
+          id="randomBtn"
+          style="
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+          "
+          onclick="drawRandom()"
+        >
+          🎁 随机抽留言送礼品
+        </button>
+        <div
+          id="randomResult"
+          style="
+            margin-top: 12px;
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            display: none;
+          "
+        ></div>
+      </div>
+      <script src="js/common.js"></script>
+      <script>
+        const scroll = $('#scroll');
 
-function renderMessages() {
-  get('/wall/list').then(res => {
-    if (res.code !== 0) return;
-    const msgs = res.data;
-    scroll.innerHTML = msgs.map(m =>
-      `<div class="message-card">
+        function renderMessages() {
+          get('/wall/list').then((res) => {
+            if (res.code !== 0) return;
+            const msgs = res.data;
+            scroll.innerHTML = msgs
+              .map(
+                (m) =>
+                  `<div class="message-card">
         <div class="nickname">${esc(m.nickname)}</div>
         <div class="text">${esc(m.text)}</div>
         <div class="likes">❤ ${m.likes || 0} 赞</div>
       </div>`
-    ).join('');
-    // 复制一份实现无缝滚动
-    scroll.innerHTML += scroll.innerHTML;
-  });
-}
+              )
+              .join('');
+            // 复制一份实现无缝滚动
+            scroll.innerHTML += scroll.innerHTML;
+          });
+        }
 
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
+        function esc(s) {
+          const d = document.createElement('div');
+          d.textContent = s;
+          return d.innerHTML;
+        }
 
-renderMessages();
-setInterval(renderMessages, 5000);
+        renderMessages();
+        setInterval(renderMessages, 5000);
 
-async function drawRandom() {
-  const btn = document.getElementById('randomBtn');
-  btn.disabled = true;
-  btn.textContent = '抽取中...';
-  try {
-    const res = await post('/wall/random');
-    if (res.code === 0) {
-      const w = res.data.winner;
-      const div = document.getElementById('randomResult');
-      div.style.display = 'block';
-      div.innerHTML = '<strong>🎉 幸运留言</strong><br><br>👤 <span style="color:#ffd93d;">' + esc(w.nickname) + '</span><br>💬 ' + esc(w.text) + '<br><br>🎁 <span style="color:#ff6b6b;">' + esc(res.data.giftMsg || '恭喜中奖！') + '</span>';
-      div.style.animation = 'popIn 0.5s ease-out';
-    }
-  } catch {}
-  btn.disabled = false;
-  btn.textContent = '🎁 随机抽留言送礼品';
-}
+        async function drawRandom() {
+          const btn = document.getElementById('randomBtn');
+          btn.disabled = true;
+          btn.textContent = '抽取中...';
+          try {
+            const res = await post('/wall/random');
+            if (res.code === 0) {
+              const w = res.data.winner;
+              const div = document.getElementById('randomResult');
+              div.style.display = 'block';
+              div.innerHTML =
+                '<strong>🎉 幸运留言</strong><br><br>👤 <span style="color:#ffd93d;">' +
+                esc(w.nickname) +
+                '</span><br>💬 ' +
+                esc(w.text) +
+                '<br><br>🎁 <span style="color:#ff6b6b;">' +
+                esc(res.data.giftMsg || '恭喜中奖！') +
+                '</span>';
+              div.style.animation = 'popIn 0.5s ease-out';
+            }
+          } catch {}
+          btn.disabled = false;
+          btn.textContent = '🎁 随机抽留言送礼品';
+        }
 
-// 点击暂停/恢复滚动
-$('#wall').addEventListener('click', () => {
-  scroll.classList.toggle('paused');
-});
-</script>
+        // 点击暂停/恢复滚动
+        $('#wall').addEventListener('click', () => {
+          scroll.classList.toggle('paused');
+        });
+      </script>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-var socket = io();
-socket.on('wall:updated', function(){ renderMessages(); });
-socket.on('wall:random', function(data){
-  var div = document.getElementById('randomResult');
-  div.style.display = 'block';
-  div.innerHTML = '<strong>🎉 幸运留言</strong><br><br>👤 <span style="color:#ffd93d;">' + esc(data.winner.nickname) + '</span><br>💬 ' + esc(data.winner.text) + '<br><br>🎁 恭喜中奖！';
-  div.style.animation = 'popIn 0.5s ease-out';
-});
-</script>
+      <script src="/socket.io/socket.io.js"></script>
+      <script>
+        var socket = io();
+        socket.on('wall:updated', function () {
+          renderMessages();
+        });
+        socket.on('wall:random', function (data) {
+          var div = document.getElementById('randomResult');
+          div.style.display = 'block';
+          div.innerHTML =
+            '<strong>🎉 幸运留言</strong><br><br>👤 <span style="color:#ffd93d;">' +
+            esc(data.winner.nickname) +
+            '</span><br>💬 ' +
+            esc(data.winner.text) +
+            '<br><br>🎁 恭喜中奖！';
+          div.style.animation = 'popIn 0.5s ease-out';
+        });
+      </script>
 
-<div class="qr-code" style="position:fixed;bottom:20px;left:20px;z-index:100;text-align:center;cursor:grab;user-select:none;" id="qrBox">
-  <img class="qr-img" src="" alt="扫码参与" style="width:100px;height:100px;background:#fff;border-radius:10px;padding:4px;">
-  <p style="color:#8892b0;font-size:12px;margin-top:4px;">微信扫一扫</p>
-</div>
-<script>
-(function(){
-  var img = document.querySelector('.qr-img');
-  if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
-})();
-// ---- 拖拽二维码 ----
-(function(){
-  var box = document.getElementById('qrBox');
-  if (!box) return;
-  var dragging = false, startX, startY, startLeft, startTop;
-  function onStart(e) {
-    e.preventDefault();
-    dragging = true;
-    box.style.cursor = 'grabbing';
-    var t = e.touches ? e.touches[0] : e;
-    startX = t.clientX;
-    startY = t.clientY;
-    var rect = box.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop = rect.top;
-    // 拖拽开始时把 bottom 清掉，改用 top 定位
-    box.style.bottom = 'auto';
-    box.style.right = 'auto';
-    box.style.left = startLeft + 'px';
-    box.style.top = startTop + 'px';
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    e.preventDefault();
-    var t = e.touches ? e.touches[0] : e;
-    var dx = t.clientX - startX;
-    var dy = t.clientY - startY;
-    box.style.left = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
-    box.style.top = Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
-    box.style.bottom = 'auto';
-  }
-  function onEnd() {
-    dragging = false;
-    box.style.cursor = 'grab';
-  }
-  box.addEventListener('mousedown', onStart);
-  box.addEventListener('touchstart', onStart, { passive: false });
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('mouseup', onEnd);
-  document.addEventListener('touchend', onEnd);
-})();
-</script>
-</body>
+      <div
+        class="qr-code"
+        style="
+          position: fixed;
+          bottom: 20px;
+          left: 20px;
+          z-index: 100;
+          text-align: center;
+          cursor: grab;
+          user-select: none;
+        "
+        id="qrBox"
+      >
+        <img
+          class="qr-img"
+          src=""
+          alt="扫码参与"
+          style="width: 100px; height: 100px; background: #fff; border-radius: 10px; padding: 4px"
+        />
+        <p style="color: #8892b0; font-size: 12px; margin-top: 4px">微信扫一扫</p>
+      </div>
+      <script>
+        (function () {
+          var img = document.querySelector('.qr-img');
+          if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
+        })();
+        // ---- 拖拽二维码 ----
+        (function () {
+          var box = document.getElementById('qrBox');
+          if (!box) return;
+          var dragging = false,
+            startX,
+            startY,
+            startLeft,
+            startTop;
+          function onStart(e) {
+            e.preventDefault();
+            dragging = true;
+            box.style.cursor = 'grabbing';
+            var t = e.touches ? e.touches[0] : e;
+            startX = t.clientX;
+            startY = t.clientY;
+            var rect = box.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+            // 拖拽开始时把 bottom 清掉，改用 top 定位
+            box.style.bottom = 'auto';
+            box.style.right = 'auto';
+            box.style.left = startLeft + 'px';
+            box.style.top = startTop + 'px';
+          }
+          function onMove(e) {
+            if (!dragging) return;
+            e.preventDefault();
+            var t = e.touches ? e.touches[0] : e;
+            var dx = t.clientX - startX;
+            var dy = t.clientY - startY;
+            box.style.left =
+              Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
+            box.style.top =
+              Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
+            box.style.bottom = 'auto';
+          }
+          function onEnd() {
+            dragging = false;
+            box.style.cursor = 'grab';
+          }
+          box.addEventListener('mousedown', onStart);
+          box.addEventListener('touchstart', onStart, { passive: false });
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('touchmove', onMove, { passive: false });
+          document.addEventListener('mouseup', onEnd);
+          document.addEventListener('touchend', onEnd);
+        })();
+      </script>
+    </div>
+  </body>
 </html>

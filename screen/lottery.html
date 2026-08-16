@@ -1,222 +1,331 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 智能抽奖 - 大屏展示</title>
-<link rel="stylesheet" href="css/style.css">
-<style>
-.lottery-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-.roll-box { width: 600px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border: 2px solid rgba(255,215,0,0.3); }
-.roll-box .rolling-name { font-size: 96px; font-weight: bold; color: #ffd93d; }
-.stats { display: flex; gap: 40px; margin-top: 30px; }
-.stat-item { text-align: center; }
-.stat-item .num { font-size: 48px; color: #6bcbff; font-weight: bold; }
-.stat-item .label { font-size: 18px; color: #8892b0; margin-top: 4px; }
-.winners-list { margin-top: 40px; max-height: 300px; overflow-y: auto; width: 700px; }
-.winner-row { display: flex; justify-content: space-between; padding: 12px 24px; margin: 6px 0; background: rgba(255,215,0,0.08); border-radius: 8px; font-size: 18px; }
-.winner-row .wname { color: #ffd93d; }
-.winner-row .wprize { color: #ff6b6b; }
-</style>
-</head>
-<body>
-<div class="lottery-screen">
-  <h1 style="font-size:56px;background:linear-gradient(135deg,#ff6b6b,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🎰 AI 智能抽奖</h1>
-  <div class="roll-box">
-    <div class="rolling-name" id="rollingName">准备就绪</div>
-  </div>
-  <div id="winnerShow"></div>
-  <div class="stats">
-    <div class="stat-item"><div class="num" id="poolCount">0</div><div class="label">候选人数</div></div>
-    <div class="stat-item"><div class="num" id="winnerCount">0</div><div class="label">已中奖</div></div>
-  </div>
-  <div class="winners-list" id="winnersList"></div>
-</div>
-<script src="js/common.js"></script>
-<script>
-let rollingTimer = null;
-let knownWinnerIds = new Set();
-let poolNames = [];
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 智能抽奖 - 大屏展示</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .lottery-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .roll-box {
+        width: 600px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 40px 0;
+        border: 2px solid rgba(255, 215, 0, 0.3);
+      }
+      .roll-box .rolling-name {
+        font-size: 96px;
+        font-weight: bold;
+        color: #ffd93d;
+      }
+      .stats {
+        display: flex;
+        gap: 40px;
+        margin-top: 30px;
+      }
+      .stat-item {
+        text-align: center;
+      }
+      .stat-item .num {
+        font-size: 48px;
+        color: #6bcbff;
+        font-weight: bold;
+      }
+      .stat-item .label {
+        font-size: 18px;
+        color: #8892b0;
+        margin-top: 4px;
+      }
+      .winners-list {
+        margin-top: 40px;
+        max-height: 300px;
+        overflow-y: auto;
+        width: 700px;
+      }
+      .winner-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 24px;
+        margin: 6px 0;
+        background: rgba(255, 215, 0, 0.08);
+        border-radius: 8px;
+        font-size: 18px;
+      }
+      .winner-row .wname {
+        color: #ffd93d;
+      }
+      .winner-row .wprize {
+        color: #ff6b6b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lottery-screen">
+      <h1
+        style="
+          font-size: 56px;
+          background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        "
+      >
+        🎰 AI 智能抽奖
+      </h1>
+      <div class="roll-box">
+        <div class="rolling-name" id="rollingName">准备就绪</div>
+      </div>
+      <div id="winnerShow"></div>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="num" id="poolCount">0</div>
+          <div class="label">候选人数</div>
+        </div>
+        <div class="stat-item">
+          <div class="num" id="winnerCount">0</div>
+          <div class="label">已中奖</div>
+        </div>
+      </div>
+      <div class="winners-list" id="winnersList"></div>
+    </div>
+    <script src="js/common.js"></script>
+    <script>
+      let rollingTimer = null;
+      let knownWinnerIds = new Set();
+      let poolNames = [];
 
-// ---- 滚动动画 ----
-function startRolling() {
-  if (rollingTimer || poolNames.length === 0) return;
-  const el = document.getElementById('rollingName');
-  let idx = 0;
-  rollingTimer = setInterval(() => {
-    idx = (idx + 1) % poolNames.length;
-    el.textContent = poolNames[idx];
-  }, 60);
-}
-
-function stopRolling(winnerName) {
-  if (!rollingTimer) return;
-  clearInterval(rollingTimer);
-  rollingTimer = null;
-  const el = document.getElementById('rollingName');
-  // 逐步减速后停在获奖者名字上
-  let count = 0;
-  const names = [...poolNames].sort(() => Math.random() - 0.5).slice(0, 8);
-  names.push(winnerName);
-  function tick() {
-    if (count < names.length) {
-      el.textContent = names[count];
-      count++;
-      setTimeout(tick, 150 + count * 80);
-    } else {
-      el.textContent = winnerName;
-      el.style.fontSize = '120px';
-      el.style.color = '#ffd93d';
-      el.style.textShadow = '0 0 40px rgba(255,215,0,0.8)';
-      setTimeout(() => {
-        el.style.fontSize = '96px';
-        el.style.textShadow = 'none';
-      }, 3000);
-    }
-  }
-  tick();
-}
-
-// ---- 状态更新 ----
-async function updateState() {
-  try {
-    // 获取抽奖状态 + 中奖池名单
-    const [stateRes, poolRes] = await Promise.all([
-      get('/lottery/state'),
-      get('/lottery/pool')
-    ]);
-
-    if (stateRes.code === 0) {
-      const d = stateRes.data;
-      document.getElementById('poolCount').textContent = d.poolCount;
-      document.getElementById('winnerCount').textContent = d.winnersCount;
-
-      if (d.currentPrize) {
-        document.title = '🎰 ' + (d.currentPrize.name || d.currentPrize) + ' - AI抽奖';
+      // ---- 滚动动画 ----
+      function startRolling() {
+        if (rollingTimer || poolNames.length === 0) return;
+        const el = document.getElementById('rollingName');
+        let idx = 0;
+        rollingTimer = setInterval(() => {
+          idx = (idx + 1) % poolNames.length;
+          el.textContent = poolNames[idx];
+        }, 60);
       }
 
-      // 抽奖开启时启动滚动
-      if (d.isActive && !rollingTimer) {
-        startRolling();
-      } else if (!d.isActive && rollingTimer) {
+      function stopRolling(winnerName) {
+        if (!rollingTimer) return;
         clearInterval(rollingTimer);
         rollingTimer = null;
-      }
-    }
-
-    // 更新候选名单用于滚动
-    if (poolRes.code === 0 && Array.isArray(poolRes.data)) {
-      poolNames = poolRes.data.map(p => p.name);
-    }
-  } catch {}
-
-  // 获取中奖名单
-  try {
-    const winnersRes = await get('/lottery/winners');
-    if (winnersRes.code === 0) {
-      const list = (winnersRes.data || []).slice(0, 20);
-      document.getElementById('winnersList').innerHTML = list.map(w =>
-        '<div class="winner-row"><span class="wname">' + esc(w.name) + '</span><span class="wprize">' + esc(w.prize.name || w.prize) + '</span></div>'
-      ).join('');
-
-      // 检测新中奖者
-      for (const w of winnersRes.data) {
-        if (!knownWinnerIds.has(w.id)) {
-          knownWinnerIds.add(w.id);
-          // 显示获奖动画
-          showWinner(w);
-          break; // 一次只显示一个
+        const el = document.getElementById('rollingName');
+        // 逐步减速后停在获奖者名字上
+        let count = 0;
+        const names = [...poolNames].sort(() => Math.random() - 0.5).slice(0, 8);
+        names.push(winnerName);
+        function tick() {
+          if (count < names.length) {
+            el.textContent = names[count];
+            count++;
+            setTimeout(tick, 150 + count * 80);
+          } else {
+            el.textContent = winnerName;
+            el.style.fontSize = '120px';
+            el.style.color = '#ffd93d';
+            el.style.textShadow = '0 0 40px rgba(255,215,0,0.8)';
+            setTimeout(() => {
+              el.style.fontSize = '96px';
+              el.style.textShadow = 'none';
+            }, 3000);
+          }
         }
+        tick();
       }
-    }
-  } catch {}
-}
 
-function showWinner(w) {
-  stopRolling(w.name);
-  const prize = w.prize.name || w.prize;
-  const msg = w.message || '';
-  document.getElementById('winnerShow').innerHTML =
-    '<div class="winner-card" style="text-align:center;padding:30px 60px;margin:20px;background:rgba(255,215,0,0.1);border:2px solid #ffd93d;border-radius:24px;animation:popIn 0.5s ease-out;">' +
-    '<div class="winner-name" style="font-size:64px;font-weight:bold;color:#ffd93d;">' + esc(w.name) + '</div>' +
-    '<div class="winner-prize" style="font-size:32px;color:#ff6b6b;margin-top:8px;">' + esc(prize) + '</div>' +
-    (msg ? '<div class="winner-msg" style="font-size:24px;color:#8892b0;margin-top:12px;font-style:italic;">' + esc(msg) + '</div>' : '') +
-    '</div>';
-  // 5秒后重新开始滚动（如果仍在抽奖中）
-  setTimeout(() => {
-    document.getElementById('winnerShow').innerHTML = '';
-    updateState();
-  }, 5000);
-}
+      // ---- 状态更新 ----
+      async function updateState() {
+        try {
+          // 获取抽奖状态 + 中奖池名单
+          const [stateRes, poolRes] = await Promise.all([
+            get('/lottery/state'),
+            get('/lottery/pool'),
+          ]);
 
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = String(s);
-  return d.innerHTML;
-}
+          if (stateRes.code === 0) {
+            const d = stateRes.data;
+            document.getElementById('poolCount').textContent = d.poolCount;
+            document.getElementById('winnerCount').textContent = d.winnersCount;
 
-updateState();
-setInterval(updateState, 3000);
-</script>
+            if (d.currentPrize) {
+              document.title = '🎰 ' + (d.currentPrize.name || d.currentPrize) + ' - AI抽奖';
+            }
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-var socket = io();
-socket.on('lottery:updated', function(data){ updateState(); });
-socket.on('lottery:stateChanged', function(data){ updateState(); });
-</script>
+            // 抽奖开启时启动滚动
+            if (d.isActive && !rollingTimer) {
+              startRolling();
+            } else if (!d.isActive && rollingTimer) {
+              clearInterval(rollingTimer);
+              rollingTimer = null;
+            }
+          }
 
-<div class="qr-code" style="position:fixed;bottom:20px;left:20px;z-index:100;text-align:center;cursor:grab;user-select:none;" id="qrBox">
-  <img class="qr-img" src="" alt="扫码参与" style="width:100px;height:100px;background:#fff;border-radius:10px;padding:4px;">
-  <p style="color:#8892b0;font-size:12px;margin-top:4px;">微信扫一扫</p>
-</div>
-<script>
-(function(){
-  var img = document.querySelector('.qr-img');
-  if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
-})();
-// ---- 拖拽二维码 ----
-(function(){
-  var box = document.getElementById('qrBox');
-  if (!box) return;
-  var dragging = false, startX, startY, startLeft, startTop;
-  function onStart(e) {
-    e.preventDefault();
-    dragging = true;
-    box.style.cursor = 'grabbing';
-    var t = e.touches ? e.touches[0] : e;
-    startX = t.clientX;
-    startY = t.clientY;
-    var rect = box.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop = rect.top;
-    // 拖拽开始时把 bottom 清掉，改用 top 定位
-    box.style.bottom = 'auto';
-    box.style.right = 'auto';
-    box.style.left = startLeft + 'px';
-    box.style.top = startTop + 'px';
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    e.preventDefault();
-    var t = e.touches ? e.touches[0] : e;
-    var dx = t.clientX - startX;
-    var dy = t.clientY - startY;
-    box.style.left = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
-    box.style.top = Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
-    box.style.bottom = 'auto';
-  }
-  function onEnd() {
-    dragging = false;
-    box.style.cursor = 'grab';
-  }
-  box.addEventListener('mousedown', onStart);
-  box.addEventListener('touchstart', onStart, { passive: false });
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('mouseup', onEnd);
-  document.addEventListener('touchend', onEnd);
-})();
-</script>
-</body>
+          // 更新候选名单用于滚动
+          if (poolRes.code === 0 && Array.isArray(poolRes.data)) {
+            poolNames = poolRes.data.map((p) => p.name);
+          }
+        } catch {}
+
+        // 获取中奖名单
+        try {
+          const winnersRes = await get('/lottery/winners');
+          if (winnersRes.code === 0) {
+            const list = (winnersRes.data || []).slice(0, 20);
+            document.getElementById('winnersList').innerHTML = list
+              .map(
+                (w) =>
+                  '<div class="winner-row"><span class="wname">' +
+                  esc(w.name) +
+                  '</span><span class="wprize">' +
+                  esc(w.prize.name || w.prize) +
+                  '</span></div>'
+              )
+              .join('');
+
+            // 检测新中奖者
+            for (const w of winnersRes.data) {
+              if (!knownWinnerIds.has(w.id)) {
+                knownWinnerIds.add(w.id);
+                // 显示获奖动画
+                showWinner(w);
+                break; // 一次只显示一个
+              }
+            }
+          }
+        } catch {}
+      }
+
+      function showWinner(w) {
+        stopRolling(w.name);
+        const prize = w.prize.name || w.prize;
+        const msg = w.message || '';
+        document.getElementById('winnerShow').innerHTML =
+          '<div class="winner-card" style="text-align:center;padding:30px 60px;margin:20px;background:rgba(255,215,0,0.1);border:2px solid #ffd93d;border-radius:24px;animation:popIn 0.5s ease-out;">' +
+          '<div class="winner-name" style="font-size:64px;font-weight:bold;color:#ffd93d;">' +
+          esc(w.name) +
+          '</div>' +
+          '<div class="winner-prize" style="font-size:32px;color:#ff6b6b;margin-top:8px;">' +
+          esc(prize) +
+          '</div>' +
+          (msg
+            ? '<div class="winner-msg" style="font-size:24px;color:#8892b0;margin-top:12px;font-style:italic;">' +
+              esc(msg) +
+              '</div>'
+            : '') +
+          '</div>';
+        // 5秒后重新开始滚动（如果仍在抽奖中）
+        setTimeout(() => {
+          document.getElementById('winnerShow').innerHTML = '';
+          updateState();
+        }, 5000);
+      }
+
+      function esc(s) {
+        const d = document.createElement('div');
+        d.textContent = String(s);
+        return d.innerHTML;
+      }
+
+      updateState();
+      setInterval(updateState, 3000);
+    </script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+      socket.on('lottery:updated', function (data) {
+        updateState();
+      });
+      socket.on('lottery:stateChanged', function (data) {
+        updateState();
+      });
+    </script>
+
+    <div
+      class="qr-code"
+      style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 100;
+        text-align: center;
+        cursor: grab;
+        user-select: none;
+      "
+      id="qrBox"
+    >
+      <img
+        class="qr-img"
+        src=""
+        alt="扫码参与"
+        style="width: 100px; height: 100px; background: #fff; border-radius: 10px; padding: 4px"
+      />
+      <p style="color: #8892b0; font-size: 12px; margin-top: 4px">微信扫一扫</p>
+    </div>
+    <script>
+      (function () {
+        var img = document.querySelector('.qr-img');
+        if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
+      })();
+      // ---- 拖拽二维码 ----
+      (function () {
+        var box = document.getElementById('qrBox');
+        if (!box) return;
+        var dragging = false,
+          startX,
+          startY,
+          startLeft,
+          startTop;
+        function onStart(e) {
+          e.preventDefault();
+          dragging = true;
+          box.style.cursor = 'grabbing';
+          var t = e.touches ? e.touches[0] : e;
+          startX = t.clientX;
+          startY = t.clientY;
+          var rect = box.getBoundingClientRect();
+          startLeft = rect.left;
+          startTop = rect.top;
+          // 拖拽开始时把 bottom 清掉，改用 top 定位
+          box.style.bottom = 'auto';
+          box.style.right = 'auto';
+          box.style.left = startLeft + 'px';
+          box.style.top = startTop + 'px';
+        }
+        function onMove(e) {
+          if (!dragging) return;
+          e.preventDefault();
+          var t = e.touches ? e.touches[0] : e;
+          var dx = t.clientX - startX;
+          var dy = t.clientY - startY;
+          box.style.left =
+            Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
+          box.style.top =
+            Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
+          box.style.bottom = 'auto';
+        }
+        function onEnd() {
+          dragging = false;
+          box.style.cursor = 'grab';
+        }
+        box.addEventListener('mousedown', onStart);
+        box.addEventListener('touchstart', onStart, { passive: false });
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchend', onEnd);
+      })();
+    </script>
+  </body>
 </html>

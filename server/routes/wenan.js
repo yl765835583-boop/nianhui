@@ -58,7 +58,10 @@ router.post('/rewrite', async (req, res) => {
   if (!text) return res.json(fail('请提供原文'));
 
   try {
-    const result = await chatLLM('请改写以下文本，风格：' + (style || '正式大气') + '\n\n原文：' + text, { style });
+    const result = await chatLLM(
+      '请改写以下文本，风格：' + (style || '正式大气') + '\n\n原文：' + text,
+      { style }
+    );
     res.json(ok({ text: result }));
   } catch (e) {
     res.json(fail('改写失败：' + e.message));

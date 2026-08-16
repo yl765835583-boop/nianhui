@@ -6,33 +6,42 @@ Page({
     avatarStyle: '古风',
     photoUrl: '',
     uploaded: false,
-    avatarStyles: ['财神','古风','Q版','职场潮人','年会礼服'],
+    avatarStyles: ['财神', '古风', 'Q版', '职场潮人', '年会礼服'],
     nickname: '',
     role: '',
     department: '',
     loading: false,
     resultImage: '',
     resultText: '',
-    showResult: false
+    showResult: false,
   },
 
   switchMode(e) {
     this.setData({ mode: e.currentTarget.dataset.mode, showResult: false });
   },
-  selectStyle(e) { this.setData({ avatarStyle: e.currentTarget.dataset.value }); },
+  selectStyle(e) {
+    this.setData({ avatarStyle: e.currentTarget.dataset.value });
+  },
   choosePhoto() {
     const that = this;
     wx.chooseImage({
-      count: 1, sizeType: ['compressed'],
+      count: 1,
+      sizeType: ['compressed'],
       success(res) {
         that.setData({ photoUrl: res.tempFilePaths[0], uploaded: true });
         wx.showToast({ title: '照片已选择' });
-      }
+      },
     });
   },
-  onNickInput(e) { this.setData({ nickname: e.detail.value }); },
-  onRoleInput(e) { this.setData({ role: e.detail.value }); },
-  onDeptInput(e) { this.setData({ department: e.detail.value }); },
+  onNickInput(e) {
+    this.setData({ nickname: e.detail.value });
+  },
+  onRoleInput(e) {
+    this.setData({ role: e.detail.value });
+  },
+  onDeptInput(e) {
+    this.setData({ department: e.detail.value });
+  },
 
   async doGenerateAvatar() {
     this.setData({ loading: true, showResult: false });
@@ -57,7 +66,7 @@ Page({
       this.setData({
         resultText: res.data.text,
         resultImage: res.data.imageUrl,
-        showResult: true
+        showResult: true,
       });
     } catch (e) {
       wx.showToast({ title: '生成失败', icon: 'none' });
@@ -76,14 +85,14 @@ Page({
         wx.saveImageToPhotosAlbum({
           filePath: res.tempFilePath,
           success: () => wx.showToast({ title: '已保存到相册', icon: 'success' }),
-          fail: () => wx.showToast({ title: '请授权相册权限', icon: 'none' })
+          fail: () => wx.showToast({ title: '请授权相册权限', icon: 'none' }),
         });
       },
-      fail: () => wx.showToast({ title: '下载失败', icon: 'none' })
+      fail: () => wx.showToast({ title: '下载失败', icon: 'none' }),
     });
   },
 
   shareCard() {
     wx.showShareMenu({ withShareTicket: true });
-  }
+  },
 });

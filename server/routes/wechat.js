@@ -30,13 +30,18 @@ router.get('/auth', (req, res) => {
   const scope = config.wechat.oauthScope || 'snsapi_base';
 
   // snsapi_userinfo: 需要用户手动同意，可获取昵称和头像
-  const wxUrl = 'https://open.weixin.qq.com/connect/oauth2/authorize'
-    + '?appid=' + appId
-    + '&redirect_uri=' + redirectUri
-    + '&response_type=code'
-    + '&scope=' + scope
-    + '&state=' + state
-    + '#wechat_redirect';
+  const wxUrl =
+    'https://open.weixin.qq.com/connect/oauth2/authorize' +
+    '?appid=' +
+    appId +
+    '&redirect_uri=' +
+    redirectUri +
+    '&response_type=code' +
+    '&scope=' +
+    scope +
+    '&state=' +
+    state +
+    '#wechat_redirect';
 
   res.redirect(wxUrl);
 });
@@ -44,20 +49,27 @@ router.get('/auth', (req, res) => {
 // HTTP GET 辅助
 function httpGet(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, (resp) => {
-      let data = '';
-      resp.on('data', (chunk) => { data += chunk; });
-      resp.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error('JSON parse error: ' + data.substring(0, 200))); }
-      });
-    }).on('error', reject);
+    https
+      .get(url, (resp) => {
+        let data = '';
+        resp.on('data', (chunk) => {
+          data += chunk;
+        });
+        resp.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch {
+            reject(new Error('JSON parse error: ' + data.substring(0, 200)));
+          }
+        });
+      })
+      .on('error', reject);
   });
 }
 
 // 微信 OAuth 回调：用 code 换取用户信息，自动签到
 router.get('/callback', async (req, res) => {
-  const { code, state } = req.query;
+  const { code } = req.query;
 
   if (!code) {
     // 用户拒绝授权，回退到手动签到
@@ -73,11 +85,15 @@ router.get('/callback', async (req, res) => {
     const appSecret = config.wechat.appSecret;
 
     // 1. 用 code 换取 access_token 和 openid
-    const tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token'
-      + '?appid=' + appId
-      + '&secret=' + appSecret
-      + '&code=' + code
-      + '&grant_type=authorization_code';
+    const tokenUrl =
+      'https://api.weixin.qq.com/sns/oauth2/access_token' +
+      '?appid=' +
+      appId +
+      '&secret=' +
+      appSecret +
+      '&code=' +
+      code +
+      '&grant_type=authorization_code';
 
     const tokenData = await httpGet(tokenUrl);
 
@@ -90,10 +106,13 @@ router.get('/callback', async (req, res) => {
     const skipUserinfo = (config.wechat.oauthScope || 'snsapi_base') !== 'snsapi_userinfo';
 
     // 2. 用 access_token 和 openid 获取用户信息
-    const userUrl = 'https://api.weixin.qq.com/sns/userinfo'
-      + '?access_token=' + access_token
-      + '&openid=' + openid
-      + '&lang=zh_CN';
+    const userUrl =
+      'https://api.weixin.qq.com/sns/userinfo' +
+      '?access_token=' +
+      access_token +
+      '&openid=' +
+      openid +
+      '&lang=zh_CN';
 
     const userData = skipUserinfo ? {} : await httpGet(userUrl);
 
@@ -102,7 +121,7 @@ router.get('/callback', async (req, res) => {
       return res.redirect('/mobile/?scan=1&reason=userinfo_fail');
     }
 
-    const nickname = userData.nickname || ('微信用户' + openid.substring(0, 6));
+    const nickname = userData.nickname || '微信用户' + openid.substring(0, 6);
     const headimg = userData.headimgurl || '';
 
     // 3. 自动签到
@@ -110,7 +129,7 @@ router.get('/callback', async (req, res) => {
     if (!game.signins) game.signins = [];
 
     // 检查 openid 是否已签到（避免重复）
-    const existing = game.signins.find(s => s.openid === openid);
+    const existing = game.signins.find((s) => s.openid === openid);
     if (!existing) {
       const record = {
         id: Date.now().toString(36),
@@ -119,7 +138,7 @@ router.get('/callback', async (req, res) => {
         openid: openid,
         avatar: headimg,
         time: new Date().toISOString(),
-        source: 'wechat'
+        source: 'wechat',
       };
       game.signins.push(record);
       storage.saveGame(game);
@@ -129,7 +148,7 @@ router.get('/callback', async (req, res) => {
         name: record.name,
         dept: record.dept,
         avatar: record.avatar || '',
-        total: game.signins.length
+        total: game.signins.length,
       });
     }
 
@@ -138,10 +157,9 @@ router.get('/callback', async (req, res) => {
       signed: '1',
       name: nickname,
       openid: openid,
-      avatar: headimg
+      avatar: headimg,
     });
     res.redirect('/mobile/?' + params.toString());
-
   } catch (err) {
     console.error('[微信OAuth] 回调异常:', err);
     res.redirect('/mobile/?scan=1&reason=error');
@@ -155,11 +173,13 @@ router.get('/jssdk-sign', (req, res) => {
   }
   // JS-SDK 签名需要 access_token 和 jsapi_ticket，流程较复杂
   // 此处返回基本配置，实际使用时需要缓存 ticket
-  res.json(ok({
-    appId: config.wechat.appId,
-    debug: false,
-    jsApiList: ['scanQRCode']
-  }));
+  res.json(
+    ok({
+      appId: config.wechat.appId,
+      debug: false,
+      jsApiList: ['scanQRCode'],
+    })
+  );
 });
 
 module.exports = router;

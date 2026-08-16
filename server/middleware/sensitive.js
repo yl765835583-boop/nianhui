@@ -16,5 +16,5 @@ module.exports = {
       result = result.replace(new RegExp(escaped, 'g'), '***');
     }
     return result;
-  }
+  },
 };

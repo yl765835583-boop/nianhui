@@ -10,7 +10,9 @@ function readJSON(filePath, fallback = []) {
   try {
     if (!fs.existsSync(filePath)) return fallback;
     return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  } catch { return fallback; }
+  } catch {
+    return fallback;
+  }
 }
 
 function writeJSON(filePath, data) {
@@ -19,7 +21,11 @@ function writeJSON(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-function ok(data, msg = 'success') { return { code: 0, data, msg }; }
-function fail(msg = 'error', code = -1) { return { code, msg, data: null }; }
+function ok(data, msg = 'success') {
+  return { code: 0, data, msg };
+}
+function fail(msg = 'error', code = -1) {
+  return { code, msg, data: null };
+}
 
 module.exports = { genId, readJSON, writeJSON, ok, fail };

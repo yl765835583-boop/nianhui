@@ -8,7 +8,7 @@ function request(method, path, data) {
       data,
       header: {
         'Content-Type': 'application/json',
-        'X-User-Token': app.globalData.userToken || ''
+        'X-User-Token': app.globalData.userToken || '',
       },
       success(res) {
         const token = res.header['X-User-Token'] || res.header['x-user-token'];
@@ -21,7 +21,7 @@ function request(method, path, data) {
       fail(err) {
         wx.showToast({ title: '网络错误', icon: 'none' });
         reject(err);
-      }
+      },
     });
   });
 }
@@ -67,4 +67,3 @@ module.exports = {
   // 音乐
   generateMusic: (data) => request('POST', '/music/generate', data),
 };
-

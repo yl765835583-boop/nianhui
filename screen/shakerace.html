@@ -1,156 +1,324 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>摇一摇赛跑 - 大屏展示</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0a0a2e;color:#fff;overflow:hidden;height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px}
-h1{font-size:52px;background:linear-gradient(135deg,#ff6b6b,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
-.subtitle{font-size:18px;color:#8892b0;margin-bottom:30px}
-.waiting{font-size:32px;color:#8892b0;margin-top:100px;text-align:center}
-.waiting .count{font-size:72px;color:#ffd93d;font-weight:bold;display:block;margin:16px 0}
-.race-track{width:85%;max-width:900px;display:flex;flex-direction:column;gap:20px;max-height:70vh;overflow-y:auto}
-.runner{display:flex;align-items:center;gap:12px}
-.runner .nick{width:140px;text-align:right;font-size:18px;color:#ffd93d;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.runner .lane{flex:1;height:44px;background:rgba(255,255,255,0.06);border-radius:22px;position:relative;overflow:hidden}
-.runner .horse{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;font-size:22px;transition:left 0.2s ease-out}
-.runner .progress{height:100%;border-radius:22px;background:linear-gradient(90deg,#4f46e5,#6366f1,#10b981);transition:width 0.2s ease-out;min-width:50px}
-.runner .pct{width:50px;text-align:left;font-size:16px;color:#6bcbff;font-weight:bold}
-.winner-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);flex-direction:column;align-items:center;justify-content:center;z-index:100}
-.winner-overlay.show{display:flex}
-.winner-overlay .trophy{font-size:120px;animation:pulse 0.5s infinite}
-.winner-overlay .name{font-size:72px;color:#ffd93d;font-weight:bold;margin:20px 0;animation:popIn 0.6s ease-out}
-.winner-overlay .msg{font-size:28px;color:#8892b0}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-@keyframes popIn{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
-</style>
-</head>
-<body>
-<h1>📳 摇一摇赛跑</h1>
-<p class="subtitle">疯狂摇晃手机，看谁先到终点！</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>摇一摇赛跑 - 大屏展示</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        background: #0a0a2e;
+        color: #fff;
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+      }
+      h1 {
+        font-size: 52px;
+        background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        font-size: 18px;
+        color: #8892b0;
+        margin-bottom: 30px;
+      }
+      .waiting {
+        font-size: 32px;
+        color: #8892b0;
+        margin-top: 100px;
+        text-align: center;
+      }
+      .waiting .count {
+        font-size: 72px;
+        color: #ffd93d;
+        font-weight: bold;
+        display: block;
+        margin: 16px 0;
+      }
+      .race-track {
+        width: 85%;
+        max-width: 900px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+      .runner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .runner .nick {
+        width: 140px;
+        text-align: right;
+        font-size: 18px;
+        color: #ffd93d;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .runner .lane {
+        flex: 1;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 22px;
+        position: relative;
+        overflow: hidden;
+      }
+      .runner .horse {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        font-size: 22px;
+        transition: left 0.2s ease-out;
+      }
+      .runner .progress {
+        height: 100%;
+        border-radius: 22px;
+        background: linear-gradient(90deg, #4f46e5, #6366f1, #10b981);
+        transition: width 0.2s ease-out;
+        min-width: 50px;
+      }
+      .runner .pct {
+        width: 50px;
+        text-align: left;
+        font-size: 16px;
+        color: #6bcbff;
+        font-weight: bold;
+      }
+      .winner-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+      .winner-overlay.show {
+        display: flex;
+      }
+      .winner-overlay .trophy {
+        font-size: 120px;
+        animation: pulse 0.5s infinite;
+      }
+      .winner-overlay .name {
+        font-size: 72px;
+        color: #ffd93d;
+        font-weight: bold;
+        margin: 20px 0;
+        animation: popIn 0.6s ease-out;
+      }
+      .winner-overlay .msg {
+        font-size: 28px;
+        color: #8892b0;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+      @keyframes popIn {
+        0% {
+          transform: scale(0.3);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📳 摇一摇赛跑</h1>
+    <p class="subtitle">疯狂摇晃手机，看谁先到终点！</p>
 
-<div id="waiting" class="waiting">
-  <span>参与人数</span>
-  <span class="count" id="playerCount">0</span>
-  <span>等待管理员开始比赛...</span>
-</div>
+    <div id="waiting" class="waiting">
+      <span>参与人数</span>
+      <span class="count" id="playerCount">0</span>
+      <span>等待管理员开始比赛...</span>
+    </div>
 
-<div id="raceTrack" class="race-track" style="display:none"></div>
+    <div id="raceTrack" class="race-track" style="display: none"></div>
 
-<div id="winnerOverlay" class="winner-overlay">
-  <div class="trophy">🏆</div>
-  <div class="name" id="winnerName"></div>
-  <p class="msg">恭喜获得摇一摇赛跑冠军！</p>
-</div>
+    <div id="winnerOverlay" class="winner-overlay">
+      <div class="trophy">🏆</div>
+      <div class="name" id="winnerName"></div>
+      <p class="msg">恭喜获得摇一摇赛跑冠军！</p>
+    </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-var socket = io();
-var raceActive = false;
-var raceId = null;
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+      var raceActive = false;
+      var raceId = null;
 
-function esc(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+      function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = String(s || '');
+        return d.innerHTML;
+      }
 
-socket.on('shake:raceStarted', function(data){
-  raceId = data.raceId;
-  raceActive = true;
-  document.getElementById('waiting').style.display = 'block';
-  document.getElementById('raceTrack').style.display = 'none';
-  document.getElementById('playerCount').textContent = '0';
-  document.getElementById('winnerOverlay').classList.remove('show');
-});
+      socket.on('shake:raceStarted', function (data) {
+        raceId = data.raceId;
+        raceActive = true;
+        document.getElementById('waiting').style.display = 'block';
+        document.getElementById('raceTrack').style.display = 'none';
+        document.getElementById('playerCount').textContent = '0';
+        document.getElementById('winnerOverlay').classList.remove('show');
+      });
 
-socket.on('shake:ranks', function(data){
-  if (!data.active) return;
-  raceActive = data.active;
-  var ranks = data.ranks;
-  document.getElementById('playerCount').textContent = ranks.length;
-  if (ranks.length === 0) return;
-  document.getElementById('waiting').style.display = 'none';
-  var track = document.getElementById('raceTrack');
-  track.style.display = 'flex';
-  track.innerHTML = ranks.map(function(r, i){
-    var medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
-    return '<div class="runner"><div class="nick">' + medal + esc(r.nickname) + '</div>' +
-      '<div class="lane"><div class="progress" style="width:' + r.progress + '%"></div>' +
-      '<div class="horse" style="left:calc(' + r.progress + '% - 30px)">🐎</div></div>' +
-      '<div class="pct">' + r.progress + '%</div></div>';
-  }).join('');
-});
+      socket.on('shake:ranks', function (data) {
+        if (!data.active) return;
+        raceActive = data.active;
+        var ranks = data.ranks;
+        document.getElementById('playerCount').textContent = ranks.length;
+        if (ranks.length === 0) return;
+        document.getElementById('waiting').style.display = 'none';
+        var track = document.getElementById('raceTrack');
+        track.style.display = 'flex';
+        track.innerHTML = ranks
+          .map(function (r, i) {
+            var medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+            return (
+              '<div class="runner"><div class="nick">' +
+              medal +
+              esc(r.nickname) +
+              '</div>' +
+              '<div class="lane"><div class="progress" style="width:' +
+              r.progress +
+              '%"></div>' +
+              '<div class="horse" style="left:calc(' +
+              r.progress +
+              '% - 30px)">🐎</div></div>' +
+              '<div class="pct">' +
+              r.progress +
+              '%</div></div>'
+            );
+          })
+          .join('');
+      });
 
-socket.on('shake:winner', function(data){
-  raceActive = false;
-  document.getElementById('winnerName').textContent = data.winner;
-  document.getElementById('winnerOverlay').classList.add('show');
-  // 5秒后隐藏
-  setTimeout(function(){
-    document.getElementById('winnerOverlay').classList.remove('show');
-  }, 5000);
-});
+      socket.on('shake:winner', function (data) {
+        raceActive = false;
+        document.getElementById('winnerName').textContent = data.winner;
+        document.getElementById('winnerOverlay').classList.add('show');
+        // 5秒后隐藏
+        setTimeout(function () {
+          document.getElementById('winnerOverlay').classList.remove('show');
+        }, 5000);
+      });
 
-socket.on('shake:reset', function(){
-  raceActive = false;
-  raceId = null;
-  document.getElementById('waiting').style.display = 'block';
-  document.getElementById('raceTrack').style.display = 'none';
-  document.getElementById('playerCount').textContent = '0';
-  document.getElementById('winnerOverlay').classList.remove('show');
-});
-</script>
+      socket.on('shake:reset', function () {
+        raceActive = false;
+        raceId = null;
+        document.getElementById('waiting').style.display = 'block';
+        document.getElementById('raceTrack').style.display = 'none';
+        document.getElementById('playerCount').textContent = '0';
+        document.getElementById('winnerOverlay').classList.remove('show');
+      });
+    </script>
 
-<div class="qr-code" style="position:fixed;bottom:20px;left:20px;z-index:100;text-align:center;cursor:grab;user-select:none;" id="qrBox">
-  <img class="qr-img" src="" alt="扫码参与" style="width:100px;height:100px;background:#fff;border-radius:10px;padding:4px;">
-  <p style="color:#8892b0;font-size:12px;margin-top:4px;">微信扫一扫</p>
-</div>
-<script>
-(function(){
-  var img = document.querySelector('.qr-img');
-  if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
-})();
-// ---- 拖拽二维码 ----
-(function(){
-  var box = document.getElementById('qrBox');
-  if (!box) return;
-  var dragging = false, startX, startY, startLeft, startTop;
-  function onStart(e) {
-    e.preventDefault();
-    dragging = true;
-    box.style.cursor = 'grabbing';
-    var t = e.touches ? e.touches[0] : e;
-    startX = t.clientX;
-    startY = t.clientY;
-    var rect = box.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop = rect.top;
-    // 拖拽开始时把 bottom 清掉，改用 top 定位
-    box.style.bottom = 'auto';
-    box.style.right = 'auto';
-    box.style.left = startLeft + 'px';
-    box.style.top = startTop + 'px';
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    e.preventDefault();
-    var t = e.touches ? e.touches[0] : e;
-    var dx = t.clientX - startX;
-    var dy = t.clientY - startY;
-    box.style.left = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
-    box.style.top = Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
-    box.style.bottom = 'auto';
-  }
-  function onEnd() {
-    dragging = false;
-    box.style.cursor = 'grab';
-  }
-  box.addEventListener('mousedown', onStart);
-  box.addEventListener('touchstart', onStart, { passive: false });
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('mouseup', onEnd);
-  document.addEventListener('touchend', onEnd);
-})();
-</script>
-</body>
+    <div
+      class="qr-code"
+      style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 100;
+        text-align: center;
+        cursor: grab;
+        user-select: none;
+      "
+      id="qrBox"
+    >
+      <img
+        class="qr-img"
+        src=""
+        alt="扫码参与"
+        style="width: 100px; height: 100px; background: #fff; border-radius: 10px; padding: 4px"
+      />
+      <p style="color: #8892b0; font-size: 12px; margin-top: 4px">微信扫一扫</p>
+    </div>
+    <script>
+      (function () {
+        var img = document.querySelector('.qr-img');
+        if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
+      })();
+      // ---- 拖拽二维码 ----
+      (function () {
+        var box = document.getElementById('qrBox');
+        if (!box) return;
+        var dragging = false,
+          startX,
+          startY,
+          startLeft,
+          startTop;
+        function onStart(e) {
+          e.preventDefault();
+          dragging = true;
+          box.style.cursor = 'grabbing';
+          var t = e.touches ? e.touches[0] : e;
+          startX = t.clientX;
+          startY = t.clientY;
+          var rect = box.getBoundingClientRect();
+          startLeft = rect.left;
+          startTop = rect.top;
+          // 拖拽开始时把 bottom 清掉，改用 top 定位
+          box.style.bottom = 'auto';
+          box.style.right = 'auto';
+          box.style.left = startLeft + 'px';
+          box.style.top = startTop + 'px';
+        }
+        function onMove(e) {
+          if (!dragging) return;
+          e.preventDefault();
+          var t = e.touches ? e.touches[0] : e;
+          var dx = t.clientX - startX;
+          var dy = t.clientY - startY;
+          box.style.left =
+            Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
+          box.style.top =
+            Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
+          box.style.bottom = 'auto';
+        }
+        function onEnd() {
+          dragging = false;
+          box.style.cursor = 'grab';
+        }
+        box.addEventListener('mousedown', onStart);
+        box.addEventListener('touchstart', onStart, { passive: false });
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchend', onEnd);
+      })();
+    </script>
+  </body>
 </html>

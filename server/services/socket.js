@@ -3,7 +3,7 @@ let io = null;
 
 function init(server) {
   io = require('socket.io')(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: { origin: '*', methods: ['GET', 'POST'] },
   });
   io.on('connection', (socket) => {
     console.log('[WS] 客户端连接: ' + socket.id);
@@ -15,7 +15,9 @@ function init(server) {
   return io;
 }
 
-function getIO() { return io; }
+function getIO() {
+  return io;
+}
 
 // 便捷 emit 方法
 function emit(event, data) {

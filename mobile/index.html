@@ -1,141 +1,472 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>年会 AI 工具箱</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a2e">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#333;padding-bottom:70px;max-width:480px;margin:0 auto;min-height:100vh}
-.hdr{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:16px;text-align:center;position:sticky;top:0;z-index:10}
-.hdr h1{font-size:20px;color:#ffd93d}
-.hdr p{font-size:13px;color:#8892b0;margin-top:2px}
-.panel{display:none;padding:12px}
-.panel.active{display:block}
-.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-.ct{font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:10px}
-.btn{padding:10px 20px;border:none;border-radius:10px;font-size:14px;cursor:pointer;text-align:center;font-weight:500}
-.btn-p{background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff}
-.btn-s{background:linear-gradient(135deg,#10b981,#34d399);color:#fff}
-.btn-w{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff}
-.btn-d{background:linear-gradient(135deg,#ef4444,#f87171);color:#fff}
-.btn:active{opacity:.8}
-.tag{display:inline-block;padding:6px 14px;border-radius:16px;font-size:12px;margin:3px;cursor:pointer;background:#f3f4f6;color:#666}
-.tag.sel{background:#4f46e5;color:#fff}
-.tag.sel2{background:#f59e0b;color:#fff}
-textarea,input[type=text],input[type=number]{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;margin-bottom:8px;font-family:inherit}
-textarea{resize:vertical;min-height:80px}
-.result{background:#f9fafb;border-radius:10px;padding:12px;margin-top:10px;font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:400px;overflow-y:auto}
-.tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
-.tab-btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;background:#f3f4f6;color:#666}
-.tab-btn.active{background:#4f46e5;color:#fff}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid-item{background:#fff;border-radius:14px;padding:24px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:pointer}
-.grid-item:active{transform:scale(.96)}
-.grid-item .icon{font-size:36px;display:block;margin-bottom:6px}
-.grid-item .title{font-size:15px;font-weight:600;color:#1a1a2e;display:block}
-.grid-item .desc{font-size:11px;color:#9ca3af;display:block;margin-top:2px}
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;background:#fff;border-top:1px solid #e5e7eb;z-index:100}
-.nav-item{flex:1;text-align:center;padding:8px 0;font-size:10px;color:#9ca3af;cursor:pointer}
-.nav-item .ni{font-size:22px;display:block}
-.nav-item.active{color:#4f46e5}
-.opt{padding:10px 14px;margin:4px 0;background:#f9fafb;border-radius:10px;font-size:13px;border:2px solid transparent;cursor:pointer}
-.opt.sel{border-color:#4f46e5;background:#eef2ff;color:#4f46e5;font-weight:500}
-.msg-item{border-bottom:1px solid #f3f4f6;padding:10px 0}
-.msg-item .mn{font-weight:600;color:#4f46e5;font-size:13px}
-.msg-item .mt{font-size:14px;margin-top:4px;line-height:1.5}
-.msg-item .ml{color:#ef4444;font-size:11px;margin-top:4px}
-.stat-row{display:flex;gap:12px;text-align:center}
-.stat-box{flex:1;padding:12px;background:#f9fafb;border-radius:10px}
-.stat-box .sn{font-size:28px;font-weight:700;color:#4f46e5}
-.stat-box .sl{font-size:11px;color:#9ca3af;margin-top:2px}
-.rank-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
-.rank-row .rr{color:#4f46e5;font-weight:600}
-.loading{text-align:center;padding:30px;color:#9ca3af;font-size:13px}
-.switch-wrap{display:flex;align-items:center;gap:8px;margin:8px 0}
-.switch{position:relative;display:inline-block;width:44px;height:24px}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s}
-.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
-input:checked+.slider{background:#4f46e5}
-input:checked+.slider:before{transform:translateX(20px)}
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>年会 AI 工具箱</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#1a1a2e" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background: #f0f2f5;
+        color: #333;
+        padding-bottom: 70px;
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+      }
+      .hdr {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: #fff;
+        padding: 16px;
+        text-align: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .hdr h1 {
+        font-size: 20px;
+        color: #ffd93d;
+      }
+      .hdr p {
+        font-size: 13px;
+        color: #8892b0;
+        margin-top: 2px;
+      }
+      .panel {
+        display: none;
+        padding: 12px;
+      }
+      .panel.active {
+        display: block;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+      }
+      .ct {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 10px;
+      }
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: 500;
+      }
+      .btn-p {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+      }
+      .btn-s {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        color: #fff;
+      }
+      .btn-w {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        color: #fff;
+      }
+      .btn-d {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: #fff;
+      }
+      .btn:active {
+        opacity: 0.8;
+      }
+      .tag {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 16px;
+        font-size: 12px;
+        margin: 3px;
+        cursor: pointer;
+        background: #f3f4f6;
+        color: #666;
+      }
+      .tag.sel {
+        background: #4f46e5;
+        color: #fff;
+      }
+      .tag.sel2 {
+        background: #f59e0b;
+        color: #fff;
+      }
+      textarea,
+      input[type='text'],
+      input[type='number'] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        margin-bottom: 8px;
+        font-family: inherit;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      .result {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 10px;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .tab-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        background: #f3f4f6;
+        color: #666;
+      }
+      .tab-btn.active {
+        background: #4f46e5;
+        color: #fff;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .grid-item {
+        background: #fff;
+        border-radius: 14px;
+        padding: 24px 12px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+      }
+      .grid-item:active {
+        transform: scale(0.96);
+      }
+      .grid-item .icon {
+        font-size: 36px;
+        display: block;
+        margin-bottom: 6px;
+      }
+      .grid-item .title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a1a2e;
+        display: block;
+      }
+      .grid-item .desc {
+        font-size: 11px;
+        color: #9ca3af;
+        display: block;
+        margin-top: 2px;
+      }
+      .nav {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        background: #fff;
+        border-top: 1px solid #e5e7eb;
+        z-index: 100;
+      }
+      .nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 10px;
+        color: #9ca3af;
+        cursor: pointer;
+      }
+      .nav-item .ni {
+        font-size: 22px;
+        display: block;
+      }
+      .nav-item.active {
+        color: #4f46e5;
+      }
+      .opt {
+        padding: 10px 14px;
+        margin: 4px 0;
+        background: #f9fafb;
+        border-radius: 10px;
+        font-size: 13px;
+        border: 2px solid transparent;
+        cursor: pointer;
+      }
+      .opt.sel {
+        border-color: #4f46e5;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-weight: 500;
+      }
+      .msg-item {
+        border-bottom: 1px solid #f3f4f6;
+        padding: 10px 0;
+      }
+      .msg-item .mn {
+        font-weight: 600;
+        color: #4f46e5;
+        font-size: 13px;
+      }
+      .msg-item .mt {
+        font-size: 14px;
+        margin-top: 4px;
+        line-height: 1.5;
+      }
+      .msg-item .ml {
+        color: #ef4444;
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .stat-row {
+        display: flex;
+        gap: 12px;
+        text-align: center;
+      }
+      .stat-box {
+        flex: 1;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 10px;
+      }
+      .stat-box .sn {
+        font-size: 28px;
+        font-weight: 700;
+        color: #4f46e5;
+      }
+      .stat-box .sl {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 2px;
+      }
+      .rank-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 13px;
+      }
+      .rank-row .rr {
+        color: #4f46e5;
+        font-weight: 600;
+      }
+      .loading {
+        text-align: center;
+        padding: 30px;
+        color: #9ca3af;
+        font-size: 13px;
+      }
+      .switch-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+      }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #ccc;
+        border-radius: 24px;
+        transition: 0.3s;
+      }
+      .slider:before {
+        position: absolute;
+        content: '';
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: 0.3s;
+      }
+      input:checked + .slider {
+        background: #4f46e5;
+      }
+      input:checked + .slider:before {
+        transform: translateX(20px);
+      }
 
-@keyframes pulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.08);opacity:1}}</style>
-</head>
-<body>
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hdr">
+      <h1>🎉 年会 AI 欢乐工具箱</h1>
+      <p>文稿 · 形象 · 互动 · 游戏</p>
+    </div>
 
-<div class="hdr"><h1>🎉 年会 AI 欢乐工具箱</h1><p>文稿 · 形象 · 互动 · 游戏</p></div>
+    <div id="p-home" class="panel active"></div>
+    <div id="p-wenan" class="panel"></div>
+    <div id="p-avatar" class="panel"></div>
+    <div id="p-wall" class="panel"></div>
+    <div id="p-game" class="panel"></div>
+    <div id="p-lottery" class="panel"></div>
+    <div id="p-signin" class="panel"></div>
 
-<div id="p-home" class="panel active"></div>
-<div id="p-wenan" class="panel"></div>
-<div id="p-avatar" class="panel"></div>
-<div id="p-wall" class="panel"></div>
-<div id="p-game" class="panel"></div>
-<div id="p-lottery" class="panel"></div>
-<div id="p-signin" class="panel"></div>
+    <div class="nav">
+      <div class="nav-item active" data-p="home"><span class="ni">🏠</span>首页</div>
+      <div class="nav-item" data-p="wenan"><span class="ni">✍️</span>文稿</div>
+      <div class="nav-item" data-p="avatar"><span class="ni">🪄</span>形象</div>
+      <div class="nav-item" data-p="wall"><span class="ni">💬</span>互动</div>
+      <div class="nav-item" data-p="lottery"><span class="ni">🎰</span>抽奖</div>
+      <div class="nav-item" data-p="signin"><span class="ni">✅</span>签到</div>
+      <div class="nav-item" data-p="game"><span class="ni">🎮</span>游戏</div>
+    </div>
 
-<div class="nav">
-  <div class="nav-item active" data-p="home"><span class="ni">🏠</span>首页</div>
-  <div class="nav-item" data-p="wenan"><span class="ni">✍️</span>文稿</div>
-  <div class="nav-item" data-p="avatar"><span class="ni">🪄</span>形象</div>
-  <div class="nav-item" data-p="wall"><span class="ni">💬</span>互动</div>
-  <div class="nav-item" data-p="lottery"><span class="ni">🎰</span>抽奖</div>
-  <div class="nav-item" data-p="signin"><span class="ni">✅</span>签到</div>
-  <div class="nav-item" data-p="game"><span class="ni">🎮</span>游戏</div>
-</div>
+    <script>
+      const API = '';
+      // 微信扫码签到自动检测
+      (function () {
+        var q = new URLSearchParams(location.search);
+        if (q.get('signed') === '1') {
+          var name = q.get('name') || '微信用户';
+          var openid = q.get('openid') || '';
+          var avatar = q.get('avatar') || '';
+          gSigninDone = true;
+          gSigninName = name;
+          gSigninWxAvatar = avatar;
+          gSigninOpenid = openid;
+          gSigninSource = 'wechat';
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', location.pathname);
+          }
+          setTimeout(function () {
+            var nav = document.querySelector('.nav-item[data-p="signin"]');
+            if (nav) nav.click();
+          }, 300);
+        } else if (q.get('scan') === '1') {
+          setTimeout(function () {
+            var nav = document.querySelector('.nav-item[data-p="signin"]');
+            if (nav) nav.click();
+          }, 300);
+        }
+      })();
+      async function get(p) {
+        const r = await fetch(API + '/api' + p, {
+          headers: { 'X-User-Token': localStorage.getItem('token') || '' },
+        });
+        let t = r.headers.get('X-User-Token');
+        if (t) localStorage.setItem('token', t);
+        return r.json();
+      }
+      async function post(p, b) {
+        const r = await fetch(API + '/api' + p, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Token': localStorage.getItem('token') || '',
+          },
+          body: JSON.stringify(b),
+        });
+        let t = r.headers.get('X-User-Token');
+        if (t) localStorage.setItem('token', t);
+        return r.json();
+      }
+      function $(s) {
+        return document.querySelector(s);
+      }
+      function $$(s) {
+        return document.querySelectorAll(s);
+      }
+      let features = {};
+      async function loadFeatures() {
+        try {
+          const r = await get('/settings');
+          if (r.code === 0 && r.data && r.data.features) features = r.data.features;
+        } catch {}
+      }
+      function isOn(name) {
+        return features[name] !== false;
+      }
+      function esc(s) {
+        const d = document.createElement('div');
+        d.textContent = String(s || '');
+        return d.innerHTML;
+      }
 
-<script>
-const API='';
-// 微信扫码签到自动检测
-(function(){
-  var q=new URLSearchParams(location.search);
-  if(q.get('signed')==='1'){
-    var name=q.get('name')||'微信用户';
-    var openid=q.get('openid')||'';
-    var avatar=q.get('avatar')||'';
-    gSigninDone=true;gSigninName=name;gSigninWxAvatar=avatar;gSigninOpenid=openid;
-    gSigninSource='wechat';
-    if(window.history&&window.history.replaceState){
-      window.history.replaceState({},'',location.pathname);
-    }
-    setTimeout(function(){
-      var nav=document.querySelector('.nav-item[data-p="signin"]');
-      if(nav) nav.click();
-    },300);
-  }else if(q.get('scan')==='1'){
-    setTimeout(function(){
-      var nav=document.querySelector('.nav-item[data-p="signin"]');
-      if(nav) nav.click();
-    },300);
-  }
-})();
-async function get(p){const r=await fetch(API+'/api'+p,{headers:{'X-User-Token':localStorage.getItem('token')||''}});let t=r.headers.get('X-User-Token');if(t)localStorage.setItem('token',t);return r.json()}
-async function post(p,b){const r=await fetch(API+'/api'+p,{method:'POST',headers:{'Content-Type':'application/json','X-User-Token':localStorage.getItem('token')||''},body:JSON.stringify(b)});let t=r.headers.get('X-User-Token');if(t)localStorage.setItem('token',t);return r.json()}
-function $(s){return document.querySelector(s)}
-function $$(s){return document.querySelectorAll(s)}
-let features={};async function loadFeatures(){try{const r=await get("/settings");if(r.code===0&&r.data&&r.data.features)features=r.data.features}catch{}}function isOn(name){return features[name]!==false}function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+      function showDisabled(id) {
+        var e = document.getElementById(id);
+        e.innerHTML =
+          '<div style="text-align:center;padding:60px 20px;color:#9ca3af;"><div style="font-size:48px">🔒</div><p style="margin-top:12px">该功能已关闭</p></div>';
+      }
+      // Navigation
+      $$('.nav-item').forEach((el) =>
+        el.addEventListener('click', () => {
+          const p = el.dataset.p;
+          $$('.nav-item').forEach((x) => x.classList.remove('active'));
+          el.classList.add('active');
+          $$('.panel').forEach((x) => x.classList.remove('active'));
+          $('#p-' + p).classList.add('active');
+          if (p === 'home') loadFeatures().then(() => renderHome());
+          if (p === 'wenan') renderWenan();
+          if (p === 'wall') {
+            renderWall();
+            renderLottery();
+          }
+          if (p === 'lottery') renderLotteryPage();
+          if (p === 'signin') renderSignin();
+          if (p === 'game') renderGame();
+        })
+      );
 
-function showDisabled(id){var e=document.getElementById(id);e.innerHTML='<div style="text-align:center;padding:60px 20px;color:#9ca3af;"><div style="font-size:48px">🔒</div><p style="margin-top:12px">该功能已关闭</p></div>'}
-// Navigation
-$$('.nav-item').forEach(el=>el.addEventListener('click',()=>{
-  const p=el.dataset.p;
-  $$('.nav-item').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
-  $$('.panel').forEach(x=>x.classList.remove('active'));
-  $('#p-'+p).classList.add('active');
-  if(p==='home') loadFeatures().then(()=>renderHome());
-  if(p==='wenan') renderWenan();
-  if(p==='wall'){renderWall();renderLottery();}
-  if(p==='lottery') renderLotteryPage();
-  if(p==='signin') renderSignin();
-  if(p==='game') renderGame();
-}));
-
-// ===== HOME =====
-function renderHome(){
-  $('#p-home').innerHTML=`
+      // ===== HOME =====
+      function renderHome() {
+        $('#p-home').innerHTML = `
     <div class="grid2">
       <div class="grid-item" onclick="navTo('wenan')"><span class="icon">✍️</span><span class="title">文稿创作</span><span class="desc">致辞·串词·剧本</span></div>
       <div class="grid-item" onclick="navTo('avatar')"><span class="icon">🪄</span><span class="title">形象名片</span><span class="desc">头像·人设卡片</span></div>
@@ -146,103 +477,153 @@ function renderHome(){
       <div class="grid-item" onclick="navTo('signin')"><span class="icon">✅</span><span class="title">扫码签到</span><span class="desc">签到上大屏</span></div>
     </div>
     <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:20px;">💡 管理员请用电脑打开管理后台控制抽奖</p>`;
-}
-function navTo(p){
-  $$('.nav-item').forEach(x=>{x.classList.remove('active');if(x.dataset.p===p)x.classList.add('active')});
-  $$('.panel').forEach(x=>x.classList.remove('active'));
-  $('#p-'+p).classList.add('active');
-  if(p==='wenan') renderWenan();
-  if(p==='wall'){renderWall();renderLottery();}
-  if(p==='game') renderGame();
-  if(p==='signin') renderSignin();
-}
+      }
+      function navTo(p) {
+        $$('.nav-item').forEach((x) => {
+          x.classList.remove('active');
+          if (x.dataset.p === p) x.classList.add('active');
+        });
+        $$('.panel').forEach((x) => x.classList.remove('active'));
+        $('#p-' + p).classList.add('active');
+        if (p === 'wenan') renderWenan();
+        if (p === 'wall') {
+          renderWall();
+          renderLottery();
+        }
+        if (p === 'game') renderGame();
+        if (p === 'signin') renderSignin();
+      }
 
-// ===== WENAN =====
-let wMode='wenan',wType='领导致辞',wStyle='正式大气',wScript='小品',wSong='',wTopic='',wCount=500,wPeople=3,wDur=5;
+      // ===== WENAN =====
+      let wMode = 'wenan',
+        wType = '领导致辞',
+        wStyle = '正式大气',
+        wScript = '小品',
+        wSong = '',
+        wTopic = '',
+        wCount = 500,
+        wPeople = 3,
+        wDur = 5;
 
-function renderWenan(){
-  $('#p-wenan').innerHTML=`
+      function renderWenan() {
+        $('#p-wenan').innerHTML = `
     <div class="tabs">
-      <button class="tab-btn ${wMode==='wenan'?'active':''}" onclick="setWMode('wenan')">📝 文案</button>
-      <button class="tab-btn ${wMode==='script'?'active':''}" onclick="setWMode('script')">🎭 剧本</button>
-      <button class="tab-btn ${wMode==='lyrics'?'active':''}" onclick="setWMode('lyrics')">🎵 改歌词</button>
+      <button class="tab-btn ${wMode === 'wenan' ? 'active' : ''}" onclick="setWMode('wenan')">📝 文案</button>
+      <button class="tab-btn ${wMode === 'script' ? 'active' : ''}" onclick="setWMode('script')">🎭 剧本</button>
+      <button class="tab-btn ${wMode === 'lyrics' ? 'active' : ''}" onclick="setWMode('lyrics')">🎵 改歌词</button>
     </div>
-    ${wMode==='wenan'?wenanPanel():''}
-    ${wMode==='script'?scriptPanel():''}
-    ${wMode==='lyrics'?lyricsPanel():''}
+    ${wMode === 'wenan' ? wenanPanel() : ''}
+    ${wMode === 'script' ? scriptPanel() : ''}
+    ${wMode === 'lyrics' ? lyricsPanel() : ''}
     <div id="wenanResult"></div>`;
-}
+      }
 
-function wenanPanel(){
-  const types=['领导致辞','主持串词','颁奖词','抽奖话术','员工评语','年会标语','对联'];
-  return `<div class="card"><div class="ct">文案类型</div>${types.map(t=>`<span class="tag${wType===t?' sel':''}" onclick="wType='${t}';renderWenan()">${t}</span>`).join('')}</div>
-    <div class="card"><div class="ct">风格</div>${['正式大气','幽默轻松','温情走心'].map(s=>`<span class="tag${wStyle===s?' sel2':''}" onclick="wStyle='${s}';renderWenan()">${s}</span>`).join('')}</div>
+      function wenanPanel() {
+        const types = [
+          '领导致辞',
+          '主持串词',
+          '颁奖词',
+          '抽奖话术',
+          '员工评语',
+          '年会标语',
+          '对联',
+        ];
+        return `<div class="card"><div class="ct">文案类型</div>${types.map((t) => `<span class="tag${wType === t ? ' sel' : ''}" onclick="wType='${t}';renderWenan()">${t}</span>`).join('')}</div>
+    <div class="card"><div class="ct">风格</div>${['正式大气', '幽默轻松', '温情走心'].map((s) => `<span class="tag${wStyle === s ? ' sel2' : ''}" onclick="wStyle='${s}';renderWenan()">${s}</span>`).join('')}</div>
     <div class="card"><div class="ct">主题（选填）</div><input type="text" placeholder="如：2026年会开场" value="${esc(wTopic)}" oninput="wTopic=this.value"></div>
     <div class="card"><div class="ct">字数：${wCount}</div><input type="range" min="100" max="2000" value="${wCount}" oninput="wCount=parseInt(this.value);this.nextElementSibling.textContent=wCount"><span>${wCount}</span></div>
     <button class="btn btn-p" style="width:100%" onclick="genWenan()">✨ AI 生成</button>`;
-}
+      }
 
-function scriptPanel(){
-  const types=['小品','脱口秀','三句半'];
-  return `<div class="card"><div class="ct">节目类型</div>${types.map(t=>`<span class="tag${wScript===t?' sel':''}" onclick="wScript='${t}';renderWenan()">${t}</span>`).join('')}</div>
-    <div class="card"><div class="ct">风格</div>${['幽默轻松','正式大气','温情走心'].map(s=>`<span class="tag${wStyle===s?' sel2':''}" onclick="wStyle='${s}';renderWenan()">${s}</span>`).join('')}</div>
+      function scriptPanel() {
+        const types = ['小品', '脱口秀', '三句半'];
+        return `<div class="card"><div class="ct">节目类型</div>${types.map((t) => `<span class="tag${wScript === t ? ' sel' : ''}" onclick="wScript='${t}';renderWenan()">${t}</span>`).join('')}</div>
+    <div class="card"><div class="ct">风格</div>${['幽默轻松', '正式大气', '温情走心'].map((s) => `<span class="tag${wStyle === s ? ' sel2' : ''}" onclick="wStyle='${s}';renderWenan()">${s}</span>`).join('')}</div>
     <div class="card"><div class="ct">主题</div><input type="text" placeholder="如：技术部年会" value="${esc(wTopic)}" oninput="wTopic=this.value"></div>
     <div class="card"><div class="ct">人数：${wPeople} | 时长：${wDur}分钟</div>
       <input type="range" min="1" max="10" value="${wPeople}" oninput="wPeople=parseInt(this.value);renderWenan()">
       <input type="range" min="1" max="15" value="${wDur}" oninput="wDur=parseInt(this.value);renderWenan()"></div>
     <button class="btn btn-p" style="width:100%" onclick="genScript()">✨ AI 生成剧本</button>`;
-}
+      }
 
-function lyricsPanel(){
-  return `<div class="card"><div class="ct">原歌曲名</div><input type="text" placeholder="例如：恭喜发财" value="${esc(wSong)}" oninput="wSong=this.value"></div>
+      function lyricsPanel() {
+        return `<div class="card"><div class="ct">原歌曲名</div><input type="text" placeholder="例如：恭喜发财" value="${esc(wSong)}" oninput="wSong=this.value"></div>
     <div class="card"><div class="ct">主题</div><input type="text" placeholder="如：公司年会" value="${esc(wTopic)}" oninput="wTopic=this.value"></div>
     <button class="btn btn-p" style="width:100%" onclick="genLyrics()">🎵 改编歌词</button>`;
-}
+      }
 
-function setWMode(m){wMode=m;renderWenan()}
+      function setWMode(m) {
+        wMode = m;
+        renderWenan();
+      }
 
-async function genWenan(){
-  const res=await post('/wenan/generate',{type:wType,style:wStyle,topic:wTopic,wordCount:wCount});
-  showWenanResult(res);
-}
-async function genScript(){
-  const res=await post('/wenan/script',{scriptType:wScript,topic:wTopic,people:wPeople,duration:wDur,style:wStyle});
-  showWenanResult(res);
-}
-async function genLyrics(){
-  const res=await post('/wenan/lyrics',{song:wSong,topic:wTopic,style:wStyle});
-  showWenanResult(res);
-}
-function showWenanResult(res){
-  if(res.code!==0){$('#wenanResult').innerHTML=`<div class="card" style="color:#ef4444">${res.msg}</div>`;return}
-  const t=res.data.text||'';
-  $('#wenanResult').innerHTML=`<div class="card"><div class="ct">生成结果</div><div class="result">${esc(t)}</div>
+      async function genWenan() {
+        const res = await post('/wenan/generate', {
+          type: wType,
+          style: wStyle,
+          topic: wTopic,
+          wordCount: wCount,
+        });
+        showWenanResult(res);
+      }
+      async function genScript() {
+        const res = await post('/wenan/script', {
+          scriptType: wScript,
+          topic: wTopic,
+          people: wPeople,
+          duration: wDur,
+          style: wStyle,
+        });
+        showWenanResult(res);
+      }
+      async function genLyrics() {
+        const res = await post('/wenan/lyrics', { song: wSong, topic: wTopic, style: wStyle });
+        showWenanResult(res);
+      }
+      function showWenanResult(res) {
+        if (res.code !== 0) {
+          $('#wenanResult').innerHTML = `<div class="card" style="color:#ef4444">${res.msg}</div>`;
+          return;
+        }
+        const t = res.data.text || '';
+        $('#wenanResult').innerHTML =
+          `<div class="card"><div class="ct">生成结果</div><div class="result">${esc(t)}</div>
     <div style="display:flex;gap:8px;margin-top:8px">
-    <button class="btn btn-s" style="flex:1" onclick="copyText('${esc(t).replace(/'/g,"\\'")}')">📋 复制</button>
+    <button class="btn btn-s" style="flex:1" onclick="copyText('${esc(t).replace(/'/g, "\\'")}')">📋 复制</button>
     <button class="btn btn-w" style="flex:1" onclick="rewriteText()">🔄 改写</button></div></div>`;
-}
-function copyText(t){navigator.clipboard.writeText(t).then(()=>alert('已复制'))}
-async function rewriteText(){
-  const res=await post('/wenan/rewrite',{text:$('#wenanResult .result').textContent,style:wStyle});
-  if(res.code===0){$('#wenanResult .result').textContent=res.data.text}
-}
+      }
+      function copyText(t) {
+        navigator.clipboard.writeText(t).then(() => alert('已复制'));
+      }
+      async function rewriteText() {
+        const res = await post('/wenan/rewrite', {
+          text: $('#wenanResult .result').textContent,
+          style: wStyle,
+        });
+        if (res.code === 0) {
+          $('#wenanResult .result').textContent = res.data.text;
+        }
+      }
 
-// ===== AVATAR =====
-let aMode='avatar',aStyle='古风',aNick='',aRole='';
+      // ===== AVATAR =====
+      let aMode = 'avatar',
+        aStyle = '古风',
+        aNick = '',
+        aRole = '';
 
-function renderAvatar(){
-  const styles=['财神','古风','Q版','职场潮人','年会礼服'];
-  if(aMode==='avatar'){
-    $('#p-avatar').innerHTML=`
+      function renderAvatar() {
+        const styles = ['财神', '古风', 'Q版', '职场潮人', '年会礼服'];
+        if (aMode === 'avatar') {
+          $('#p-avatar').innerHTML = `
       <div class="tabs">
         <button class="tab-btn active">🪄 趣味头像</button>
         <button class="tab-btn" onclick="aMode='persona';renderAvatar()">🏷️ 年度人设</button>
       </div>
-      <div class="card"><div class="ct">选择风格</div>${styles.map(s=>`<span class="tag${aStyle===s?' sel':''}" onclick="aStyle='${s}';renderAvatar()">${s}</span>`).join('')}</div>
+      <div class="card"><div class="ct">选择风格</div>${styles.map((s) => `<span class="tag${aStyle === s ? ' sel' : ''}" onclick="aStyle='${s}';renderAvatar()">${s}</span>`).join('')}</div>
       <button class="btn btn-p" style="width:100%" onclick="genAvatar()">🎨 生成头像</button>
       <div id="avatarResult"></div>`;
-  }else{
-    $('#p-avatar').innerHTML=`
+        } else {
+          $('#p-avatar').innerHTML = `
       <div class="tabs">
         <button class="tab-btn" onclick="aMode='avatar';renderAvatar()">🪄 趣味头像</button>
         <button class="tab-btn active">🏷️ 年度人设</button>
@@ -252,24 +633,33 @@ function renderAvatar(){
         <input type="text" placeholder="岗位（如：后端工程师）" value="${esc(aRole)}" oninput="aRole=this.value"></div>
       <button class="btn btn-p" style="width:100%" onclick="genPersona()">✨ 生成年度人设卡片</button>
       <div id="avatarResult"></div>`;
-  }
-}
-async function genAvatar(){
-  const res=await post('/avatar/generate',{style:aStyle});
-  if(res.code===0) $('#avatarResult').innerHTML=`<div class="card"><img src="${res.data.url}" style="width:100%;border-radius:10px" onerror="this.src=''"><p style="text-align:center;margin-top:6px;font-size:12px;color:#9ca3af">长按图片保存</p></div>`;
-}
-async function genPersona(){
-  if(!aNick.trim()){alert('请填写昵称');return}
-  const res=await post('/avatar/persona',{nickname:aNick,role:aRole});
-  if(res.code===0) $('#avatarResult').innerHTML=`<div class="card"><img src="${res.data.imageUrl}" style="width:100%;border-radius:10px" onerror="this.style.display='none'"><div class="result">${esc(res.data.text)}</div></div>`;
-}
+        }
+      }
+      async function genAvatar() {
+        const res = await post('/avatar/generate', { style: aStyle });
+        if (res.code === 0)
+          $('#avatarResult').innerHTML =
+            `<div class="card"><img src="${res.data.url}" style="width:100%;border-radius:10px" onerror="this.src=''"><p style="text-align:center;margin-top:6px;font-size:12px;color:#9ca3af">长按图片保存</p></div>`;
+      }
+      async function genPersona() {
+        if (!aNick.trim()) {
+          alert('请填写昵称');
+          return;
+        }
+        const res = await post('/avatar/persona', { nickname: aNick, role: aRole });
+        if (res.code === 0)
+          $('#avatarResult').innerHTML =
+            `<div class="card"><img src="${res.data.imageUrl}" style="width:100%;border-radius:10px" onerror="this.style.display='none'"><div class="result">${esc(res.data.text)}</div></div>`;
+      }
 
-// ===== WALL + LOTTERY =====
-let wallTab='wall',msgText='',msgNick='';
+      // ===== WALL + LOTTERY =====
+      let wallTab = 'wall',
+        msgText = '',
+        msgNick = '';
 
-function renderWall(){
-  if(wallTab!=='wall') return;
-  $('#p-wall').innerHTML=`
+      function renderWall() {
+        if (wallTab !== 'wall') return;
+        $('#p-wall').innerHTML = `
     <div class="tabs">
       <button class="tab-btn active">💬 留言墙</button>
       <button class="tab-btn" onclick="wallTab='lottery';renderLottery()">🎰 抽奖</button>
@@ -281,312 +671,596 @@ function renderWall(){
       <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="sendMsg()">🚀 发送到留言墙</button></div>
     <div class="ct">💬 实时留言 <span id="msgCount" style="font-weight:400;color:#9ca3af">加载中...</span></div>
     <div id="msgList"></div>`;
-  loadMessages();
-}
-async function sendMsg(){
-  if(!msgText.trim()){alert('请输入留言');return}
-  const res=await post('/wall/send',{text:msgText,nickname:msgNick||'年会小伙伴'});
-  if(res.code===0){msgText='';renderWall();}else{alert(res.msg)}
-}
-async function loadMessages(){
-  const res=await get('/wall/list');
-  if(res.code===0){
-    const msgs=res.data||[];
-    document.getElementById('msgCount')&&(document.getElementById('msgCount').textContent='('+msgs.length+')');
-    const el=document.getElementById('msgList');if(!el)return;
-    el.innerHTML=msgs.length===0?'<p style="color:#9ca3af;text-align:center;padding:20px">暂无留言，快来发第一条吧！</p>':
-      msgs.map(m=>`<div class="msg-item"><div style="display:flex;justify-content:space-between"><span class="mn">${esc(m.nickname)}</span><span style="font-size:10px;color:#9ca3af">${new Date(m.time).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="mt">${esc(m.text)}</div><div style="text-align:right" class="ml" onclick="likeMsg('${m.id}')">❤ ${m.likes||0}</div></div>`).join('');
-  }
-}
-async function likeMsg(id){await post('/wall/like/'+id);loadMessages()}
+        loadMessages();
+      }
+      async function sendMsg() {
+        if (!msgText.trim()) {
+          alert('请输入留言');
+          return;
+        }
+        const res = await post('/wall/send', { text: msgText, nickname: msgNick || '年会小伙伴' });
+        if (res.code === 0) {
+          msgText = '';
+          renderWall();
+        } else {
+          alert(res.msg);
+        }
+      }
+      async function loadMessages() {
+        const res = await get('/wall/list');
+        if (res.code === 0) {
+          const msgs = res.data || [];
+          document.getElementById('msgCount') &&
+            (document.getElementById('msgCount').textContent = '(' + msgs.length + ')');
+          const el = document.getElementById('msgList');
+          if (!el) return;
+          el.innerHTML =
+            msgs.length === 0
+              ? '<p style="color:#9ca3af;text-align:center;padding:20px">暂无留言，快来发第一条吧！</p>'
+              : msgs
+                  .map(
+                    (m) =>
+                      `<div class="msg-item"><div style="display:flex;justify-content:space-between"><span class="mn">${esc(m.nickname)}</span><span style="font-size:10px;color:#9ca3af">${new Date(m.time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span></div><div class="mt">${esc(m.text)}</div><div style="text-align:right" class="ml" onclick="likeMsg('${m.id}')">❤ ${m.likes || 0}</div></div>`
+                  )
+                  .join('');
+        }
+      }
+      async function likeMsg(id) {
+        await post('/wall/like/' + id);
+        loadMessages();
+      }
 
-async function renderLottery(){
-  if(wallTab!=='lottery') return;
-  const s=await get('/lottery/state');const w=await get('/lottery/winners');
-  const d=s.data||{};
-  const winners=(w.data||[]).slice(0,20);
-  $('#p-wall').innerHTML=`
+      async function renderLottery() {
+        if (wallTab !== 'lottery') return;
+        const s = await get('/lottery/state');
+        const w = await get('/lottery/winners');
+        const d = s.data || {};
+        const winners = (w.data || []).slice(0, 20);
+        $('#p-wall').innerHTML = `
     <div class="tabs">
       <button class="tab-btn" onclick="wallTab='wall';renderWall()">💬 留言墙</button>
       <button class="tab-btn active">🎰 抽奖</button>
     </div>
     <div class="stat-row">
-      <div class="stat-box"><div class="sn">${d.poolCount||0}</div><div class="sl">候选</div></div>
-      <div class="stat-box"><div class="sn">${d.winnersCount||0}</div><div class="sl">已中奖</div></div>
-      <div class="stat-box"><div class="sn" style="color:${d.isActive?'#ef4444':'#9ca3af'}">${d.isActive?'进行中':'未开始'}</div></div>
+      <div class="stat-box"><div class="sn">${d.poolCount || 0}</div><div class="sl">候选</div></div>
+      <div class="stat-box"><div class="sn">${d.winnersCount || 0}</div><div class="sl">已中奖</div></div>
+      <div class="stat-box"><div class="sn" style="color:${d.isActive ? '#ef4444' : '#9ca3af'}">${d.isActive ? '进行中' : '未开始'}</div></div>
     </div>
     <div class="ct" style="margin-top:10px">🏆 中奖名单</div>
-    ${winners.length===0?'<p style="color:#9ca3af;text-align:center;padding:20px">等待开奖...</p>':
-      winners.map(w=>`<div class="msg-item" style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">🎉</span><div><strong>${esc(w.name)}</strong> <span style="color:#f59e0b;font-size:12px">${esc(w.prize.name||w.prize)}</span>${w.message?`<br><em style="font-size:11px;color:#8892b0">${esc(w.message)}</em>`:''}</div></div>`).join('')}`;
-}
+    ${
+      winners.length === 0
+        ? '<p style="color:#9ca3af;text-align:center;padding:20px">等待开奖...</p>'
+        : winners
+            .map(
+              (w) =>
+                `<div class="msg-item" style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">🎉</span><div><strong>${esc(w.name)}</strong> <span style="color:#f59e0b;font-size:12px">${esc(w.prize.name || w.prize)}</span>${w.message ? `<br><em style="font-size:11px;color:#8892b0">${esc(w.message)}</em>` : ''}</div></div>`
+            )
+            .join('')
+    }`;
+      }
 
-async function renderLotteryPage(){
-  var s=await get('/lottery/state');var w=await get('/lottery/winners');
-  var d=s.data||{};var winners=(w.data||[]).slice(0,20);
-  var h='<div class="card" style="text-align:center"><div style="font-size:48px">🎰</div><div style="font-size:20px;font-weight:700;margin-top:8px">AI 实时抽奖</div></div>'+
-    '<div class="stat-row"><div class="stat-box"><div class="sn">'+(d.poolCount||0)+'</div><div class="sl">候选</div></div>'+
-    '<div class="stat-box"><div class="sn">'+(d.winnersCount||0)+'</div><div class="sl">已中奖</div></div>'+
-    '<div class="stat-box"><div class="sn" style="color:'+(d.isActive?'#ef4444':'#9ca3af')+'">'+(d.isActive?'进行中':'未开始')+'</div></div></div>'+
-    '<div class="ct" style="margin-top:10px">🏆 中奖名单</div>'+
-    (winners.length===0?'<p style="color:#9ca3af;text-align:center;padding:20px">等待开奖...</p>':
-      winners.map(function(w){return '<div class="msg-item" style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">🎉</span><div><strong>'+esc(w.name)+'</strong> <span style="color:#f59e0b;font-size:12px">'+esc(w.prize.name||w.prize)+'</span>'+(w.message?'<br><em style="font-size:11px;color:#8892b0">'+esc(w.message)+'</em>':'')+'</div></div>'}).join(''));
-  document.getElementById('p-lottery').innerHTML=h;
-}
+      async function renderLotteryPage() {
+        var s = await get('/lottery/state');
+        var w = await get('/lottery/winners');
+        var d = s.data || {};
+        var winners = (w.data || []).slice(0, 20);
+        var h =
+          '<div class="card" style="text-align:center"><div style="font-size:48px">🎰</div><div style="font-size:20px;font-weight:700;margin-top:8px">AI 实时抽奖</div></div>' +
+          '<div class="stat-row"><div class="stat-box"><div class="sn">' +
+          (d.poolCount || 0) +
+          '</div><div class="sl">候选</div></div>' +
+          '<div class="stat-box"><div class="sn">' +
+          (d.winnersCount || 0) +
+          '</div><div class="sl">已中奖</div></div>' +
+          '<div class="stat-box"><div class="sn" style="color:' +
+          (d.isActive ? '#ef4444' : '#9ca3af') +
+          '">' +
+          (d.isActive ? '进行中' : '未开始') +
+          '</div></div></div>' +
+          '<div class="ct" style="margin-top:10px">🏆 中奖名单</div>' +
+          (winners.length === 0
+            ? '<p style="color:#9ca3af;text-align:center;padding:20px">等待开奖...</p>'
+            : winners
+                .map(function (w) {
+                  return (
+                    '<div class="msg-item" style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">🎉</span><div><strong>' +
+                    esc(w.name) +
+                    '</strong> <span style="color:#f59e0b;font-size:12px">' +
+                    esc(w.prize.name || w.prize) +
+                    '</span>' +
+                    (w.message
+                      ? '<br><em style="font-size:11px;color:#8892b0">' + esc(w.message) + '</em>'
+                      : '') +
+                    '</div></div>'
+                  );
+                })
+                .join(''));
+        document.getElementById('p-lottery').innerHTML = h;
+      }
 
-// ===== GAME =====
-let gTab='quiz',gQuizType='企业文化',gDiff='medium',gTeam=false,gTeamName='',gRankMode='solo';
-let gQuiz=[],gStarted=false,gAnswers={},gSubmitted=false,gScore=0,gComment='';
-let gIdiomPrev='',gIdiomInput='',gIdiomChain=[],gIdiomResult='',gIdiomHint='';
-let gFeihuaKw='',gFeihuaInput='',gFeihuaResult='';
-let gVoiceType='萝莉',gVoiceText='',gVoiceResult='';
-let gVideoPrompt='',gVideoResult='';
-let gMusicPrompt='',gMusicLyrics='',gMusicResult='';
-let gRpActive=false,gRpNick='';
-let gShakeRaceId=null,gShakeNick='',gShakeJoined=false,gShakeProgress=0,gShakeActive=false;
+      // ===== GAME =====
+      let gTab = 'quiz',
+        gQuizType = '企业文化',
+        gDiff = 'medium',
+        gTeam = false,
+        gTeamName = '',
+        gRankMode = 'solo';
+      let gQuiz = [],
+        gStarted = false,
+        gAnswers = {},
+        gSubmitted = false,
+        gScore = 0,
+        gComment = '';
+      let gIdiomPrev = '',
+        gIdiomInput = '',
+        gIdiomChain = [],
+        gIdiomResult = '',
+        gIdiomHint = '';
+      let gFeihuaKw = '',
+        gFeihuaInput = '',
+        gFeihuaResult = '';
+      let gVoiceType = '萝莉',
+        gVoiceText = '',
+        gVoiceResult = '';
+      let gVideoPrompt = '',
+        gVideoResult = '';
+      let gMusicPrompt = '',
+        gMusicLyrics = '',
+        gMusicResult = '';
+      let gRpActive = false,
+        gRpNick = '';
+      let gShakeRaceId = null,
+        gShakeNick = '',
+        gShakeJoined = false,
+        gShakeProgress = 0,
+        gShakeActive = false;
 
-function renderGame(){
-  const diffs={easy:'简单',medium:'中等',hard:'困难'};
-  let html=`<div class="tabs">
-    <button class="tab-btn ${gTab==='quiz'?'active':''}" onclick="gTab='quiz';renderGame()">🧠答题</button>
-    <button class="tab-btn ${gTab==='idiom'?'active':''}" onclick="gTab='idiom';renderGame()">🔤同音接龙</button>
-    <button class="tab-btn ${gTab==='feihua'?'active':''}" onclick="gTab='feihua';renderGame()">🌸飞花令</button>
-    <button class="tab-btn ${gTab==='voice'?'active':''}" onclick="gTab='voice';renderGame()">🎙变声</button>
-    <button class="tab-btn ${gTab==='video'?'active':''}" onclick="gTab='video';renderGame()">🎬视频</button>
-    <button class="tab-btn ${gTab==='music'?'active':''}" onclick="gTab='music';renderGame()">🎵音乐</button>
-    <button class="tab-btn ${gTab==='redpacket'?'active':''}" onclick="gTab='redpacket';renderGame()">🧧红包雨</button>
-    <button class="tab-btn ${gTab==='shake'?'active':''}" onclick="gTab='shake';renderGame()">📳摇一摇</button>
+      function renderGame() {
+        const diffs = { easy: '简单', medium: '中等', hard: '困难' };
+        let html = `<div class="tabs">
+    <button class="tab-btn ${gTab === 'quiz' ? 'active' : ''}" onclick="gTab='quiz';renderGame()">🧠答题</button>
+    <button class="tab-btn ${gTab === 'idiom' ? 'active' : ''}" onclick="gTab='idiom';renderGame()">🔤同音接龙</button>
+    <button class="tab-btn ${gTab === 'feihua' ? 'active' : ''}" onclick="gTab='feihua';renderGame()">🌸飞花令</button>
+    <button class="tab-btn ${gTab === 'voice' ? 'active' : ''}" onclick="gTab='voice';renderGame()">🎙变声</button>
+    <button class="tab-btn ${gTab === 'video' ? 'active' : ''}" onclick="gTab='video';renderGame()">🎬视频</button>
+    <button class="tab-btn ${gTab === 'music' ? 'active' : ''}" onclick="gTab='music';renderGame()">🎵音乐</button>
+    <button class="tab-btn ${gTab === 'redpacket' ? 'active' : ''}" onclick="gTab='redpacket';renderGame()">🧧红包雨</button>
+    <button class="tab-btn ${gTab === 'shake' ? 'active' : ''}" onclick="gTab='shake';renderGame()">📳摇一摇</button>
   </div>`;
 
-  if(gTab==='quiz'){
-    if(!gStarted){
-      html+=`<div class="card"><div class="ct">题目类型</div>${['企业文化','新春灯谜','脑筋急转弯'].map(t=>`<span class="tag${gQuizType===t?' sel':''}" onclick="gQuizType='${t}';renderGame()">${t}</span>`).join('')}</div>
-        <div class="card"><div class="ct">难度</div>${Object.entries(diffs).map(([k,v])=>`<span class="tag${gDiff===k?' sel2':''}" onclick="gDiff='${k}';renderGame()">${v}</span>`).join('')}</div>
-        <div class="card"><div class="switch-wrap"><label class="switch"><input type="checkbox" ${gTeam?'checked':''} onchange="gTeam=this.checked;renderGame()"><span class="slider"></span></label> ${gTeam?'👥 组队PK':'👤 单人答题'}</div>
-        ${gTeam?`<input type="text" placeholder="队名" value="${esc(gTeamName)}" oninput="gTeamName=this.value">`:''}</div>
+        if (gTab === 'quiz') {
+          if (!gStarted) {
+            html += `<div class="card"><div class="ct">题目类型</div>${['企业文化', '新春灯谜', '脑筋急转弯'].map((t) => `<span class="tag${gQuizType === t ? ' sel' : ''}" onclick="gQuizType='${t}';renderGame()">${t}</span>`).join('')}</div>
+        <div class="card"><div class="ct">难度</div>${Object.entries(diffs)
+          .map(
+            ([k, v]) =>
+              `<span class="tag${gDiff === k ? ' sel2' : ''}" onclick="gDiff='${k}';renderGame()">${v}</span>`
+          )
+          .join('')}</div>
+        <div class="card"><div class="switch-wrap"><label class="switch"><input type="checkbox" ${gTeam ? 'checked' : ''} onchange="gTeam=this.checked;renderGame()"><span class="slider"></span></label> ${gTeam ? '👥 组队PK' : '👤 单人答题'}</div>
+        ${gTeam ? `<input type="text" placeholder="队名" value="${esc(gTeamName)}" oninput="gTeamName=this.value">` : ''}</div>
         <button class="btn btn-p" style="width:100%" onclick="startQuiz()">🚀 开始答题</button>`;
-    }else if(!gSubmitted){
-      html+=gQuiz.map((q,i)=>`<div class="card"><div class="ct">${i+1}. ${esc(q.question)}</div>
-        ${q.options.map((o,j)=>`<div class="opt${gAnswers[i]==='ABCD'[j]?' sel':''}" onclick="gAnswers[${i}]='ABCD'[${j}];renderGame()">${'ABCD'[j]}. ${esc(o)}</div>`).join('')}</div>`).join('');
-      html+=`<button class="btn btn-s" style="width:100%" onclick="submitQuiz()">✅ 提交答案</button>`;
-    }else{
-      html+=`<div class="card" style="text-align:center"><div style="font-size:48px">🎉</div>
+          } else if (!gSubmitted) {
+            html += gQuiz
+              .map(
+                (q, i) => `<div class="card"><div class="ct">${i + 1}. ${esc(q.question)}</div>
+        ${q.options.map((o, j) => `<div class="opt${gAnswers[i] === 'ABCD'[j] ? ' sel' : ''}" onclick="gAnswers[${i}]='ABCD'[${j}];renderGame()">${'ABCD'[j]}. ${esc(o)}</div>`).join('')}</div>`
+              )
+              .join('');
+            html += `<button class="btn btn-s" style="width:100%" onclick="submitQuiz()">✅ 提交答案</button>`;
+          } else {
+            html += `<div class="card" style="text-align:center"><div style="font-size:48px">🎉</div>
         <div style="font-size:28px;font-weight:700;margin:8px 0">得分：${gScore} / ${gQuiz.length}</div>
         <div style="color:#8892b0;font-size:13px">${esc(gComment)}</div>
         <button class="btn btn-p" style="margin-top:10px" onclick="gStarted=false;gSubmitted=false;renderGame()">再来一局</button></div>`;
-    }
-    // 排行榜
-    html+=`<div class="card"><div class="ct">🏆 排行榜 <span style="font-size:12px;font-weight:400;margin-left:8px;cursor:pointer;color:${gRankMode==='solo'?'#4f46e5':'#9ca3af'}" onclick="gRankMode='solo';loadRanks()">👤个人</span> | <span style="font-size:12px;cursor:pointer;color:${gRankMode==='team'?'#4f46e5':'#9ca3af'}" onclick="gRankMode='team';loadRanks()">👥组队</span></div><div id="rankList"><p class="loading">加载中...</p></div></div>`;
-  }
+          }
+          // 排行榜
+          html += `<div class="card"><div class="ct">🏆 排行榜 <span style="font-size:12px;font-weight:400;margin-left:8px;cursor:pointer;color:${gRankMode === 'solo' ? '#4f46e5' : '#9ca3af'}" onclick="gRankMode='solo';loadRanks()">👤个人</span> | <span style="font-size:12px;cursor:pointer;color:${gRankMode === 'team' ? '#4f46e5' : '#9ca3af'}" onclick="gRankMode='team';loadRanks()">👥组队</span></div><div id="rankList"><p class="loading">加载中...</p></div></div>`;
+        }
 
-  if(gTab==='idiom'){
-    html+=`<div class="card" style="text-align:center"><div style="color:#9ca3af;font-size:13px">上一个成语/同音字</div>
-      <div style="font-size:36px;font-weight:700;color:#4f46e5;margin:8px 0">${gIdiomPrev||'等待开始...'}</div>
+        if (gTab === 'idiom') {
+          html += `<div class="card" style="text-align:center"><div style="color:#9ca3af;font-size:13px">上一个成语/同音字</div>
+      <div style="font-size:36px;font-weight:700;color:#4f46e5;margin:8px 0">${gIdiomPrev || '等待开始...'}</div>
       <div style="color:#ef4444;font-size:13px">${esc(gIdiomResult)}</div></div>
       <div class="card"><input type="text" placeholder="输入同音字开头的成语..." value="${esc(gIdiomInput)}" oninput="gIdiomInput=this.value" style="text-align:center;font-size:18px">
       <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="checkIdiom()">🔤 提交</button></div>
-      ${gIdiomHint?`<div class="card" style="color:#f59e0b;font-size:12px">💡 ${esc(gIdiomHint)}</div>`:''}
-      <div class="card"><div class="ct">接龙记录（同音即可）</div>${gIdiomChain.length===0?'<span style="color:#9ca3af;font-size:12px">从任意成语开始吧！同音字也算哦~</span>':gIdiomChain.map(w=>`<span style="display:inline-block;background:#4f46e5;color:#fff;padding:4px 10px;border-radius:10px;margin:2px;font-size:12px">${esc(w)}</span>`).join('')}</div>`;
-  }
+      ${gIdiomHint ? `<div class="card" style="color:#f59e0b;font-size:12px">💡 ${esc(gIdiomHint)}</div>` : ''}
+      <div class="card"><div class="ct">接龙记录（同音即可）</div>${gIdiomChain.length === 0 ? '<span style="color:#9ca3af;font-size:12px">从任意成语开始吧！同音字也算哦~</span>' : gIdiomChain.map((w) => `<span style="display:inline-block;background:#4f46e5;color:#fff;padding:4px 10px;border-radius:10px;margin:2px;font-size:12px">${esc(w)}</span>`).join('')}</div>`;
+        }
 
-  if(gTab==='feihua'){
-    html+=`<div class="card"><div class="ct">关键字</div><input type="text" placeholder="如：春" value="${esc(gFeihuaKw)}" oninput="gFeihuaKw=this.value" style="text-align:center;font-size:24px"></div>
+        if (gTab === 'feihua') {
+          html += `<div class="card"><div class="ct">关键字</div><input type="text" placeholder="如：春" value="${esc(gFeihuaKw)}" oninput="gFeihuaKw=this.value" style="text-align:center;font-size:24px"></div>
       <div class="card"><input type="text" placeholder="说出含关键字的诗句..." value="${esc(gFeihuaInput)}" oninput="gFeihuaInput=this.value">
       <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="checkFeihua()">🌸 提交</button>
-      ${gFeihuaResult?`<div style="margin-top:8px;text-align:center;font-size:14px">${esc(gFeihuaResult)}</div>`:''}</div>`;
-  }
+      ${gFeihuaResult ? `<div style="margin-top:8px;text-align:center;font-size:14px">${esc(gFeihuaResult)}</div>` : ''}</div>`;
+        }
 
-  if(gTab==='voice'){
-    const vts=['萝莉','大叔','机器人','财神音'];
-    html+=`<div class="card"><div class="ct">音色</div>${vts.map(v=>`<span class="tag${gVoiceType===v?' sel':''}" onclick="gVoiceType='${v}';renderGame()">${v}</span>`).join('')}</div>
+        if (gTab === 'voice') {
+          const vts = ['萝莉', '大叔', '机器人', '财神音'];
+          html += `<div class="card"><div class="ct">音色</div>${vts.map((v) => `<span class="tag${gVoiceType === v ? ' sel' : ''}" onclick="gVoiceType='${v}';renderGame()">${v}</span>`).join('')}</div>
       <div class="card"><textarea placeholder="输入要变声的文字..." oninput="gVoiceText=this.value">${esc(gVoiceText)}</textarea>
       <button class="btn btn-d" style="width:100%;margin-top:6px" onclick="doVoice()">🎙 语音合成</button>
-      <div id="voiceResult">${gVoiceResult?`<div class="result">${esc(gVoiceResult)}</div>`:''}</div></div>`;
-  }
+      <div id="voiceResult">${gVoiceResult ? `<div class="result">${esc(gVoiceResult)}</div>` : ''}</div></div>`;
+        }
 
-  if(gTab==='video'){
-    html+=`<div class="card"><div class="ct">🎬 AI 视频生成</div>
+        if (gTab === 'video') {
+          html += `<div class="card"><div class="ct">🎬 AI 视频生成</div>
       <textarea placeholder="描述视频画面，如：年会舞台金色灯光闪烁" oninput="gVideoPrompt=this.value">${esc(gVideoPrompt)}</textarea>
       <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="doVideo()">🎬 生成视频</button>
-      <div id="videoResult">${gVideoResult?`<div class="result">${esc(gVideoResult)}</div>`:''}</div></div>`;
-  }
+      <div id="videoResult">${gVideoResult ? `<div class="result">${esc(gVideoResult)}</div>` : ''}</div></div>`;
+        }
 
-  if(gTab==='music'){
-    html+=`<div class="card"><div class="ct">🎵 AI 音乐生成</div>
+        if (gTab === 'music') {
+          html += `<div class="card"><div class="ct">🎵 AI 音乐生成</div>
       <input type="text" placeholder="音乐描述：年会欢快背景音乐" oninput="gMusicPrompt=this.value" value="${esc(gMusicPrompt)}">
       <input type="text" placeholder="歌词（选填）" oninput="gMusicLyrics=this.value" value="${esc(gMusicLyrics)}" style="margin-top:6px">
       <button class="btn btn-s" style="width:100%;margin-top:6px" onclick="doMusic()">🎵 生成音乐</button>
-      <div id="musicResult">${gMusicResult?`<div class="result">${esc(gMusicResult)}</div>`:''}</div></div>`;
-  }
-  if(gTab==='redpacket'){
-    html+=`<div class="card" style="text-align:center"><div style="font-size:48px">🧧</div><div style="font-size:20px;font-weight:700;margin:8px 0;color:#dc2626">红包雨</div><p style="color:#8892b0;font-size:13px">${gRpActive?'🎯 红包正在飘落，快抢！':'⏳ 等待管理员发射红包雨...'}</p></div>
+      <div id="musicResult">${gMusicResult ? `<div class="result">${esc(gMusicResult)}</div>` : ''}</div></div>`;
+        }
+        if (gTab === 'redpacket') {
+          html += `<div class="card" style="text-align:center"><div style="font-size:48px">🧧</div><div style="font-size:20px;font-weight:700;margin:8px 0;color:#dc2626">红包雨</div><p style="color:#8892b0;font-size:13px">${gRpActive ? '🎯 红包正在飘落，快抢！' : '⏳ 等待管理员发射红包雨...'}</p></div>
       <div class="card"><input type="text" placeholder="你的昵称" value="${esc(gRpNick)}" oninput="gRpNick=this.value">
-      <button class="btn btn-d" style="width:100%;font-size:20px;padding:16px;margin-top:8px" onclick="claimRedpacket()" ${!gRpActive?'disabled':''}>🧧 抢红包！</button>
+      <button class="btn btn-d" style="width:100%;font-size:20px;padding:16px;margin-top:8px" onclick="claimRedpacket()" ${!gRpActive ? 'disabled' : ''}>🧧 抢红包！</button>
       <div id="rpResult" style="text-align:center;margin-top:12px"></div></div>`;
-    if(gRpActive) html+=`<p style="text-align:center;color:#f59e0b;font-size:14px;animation:pulse 1s infinite">👇 猛戳红包！</p>`;
-  }
-  if(gTab==='shake'){
-    html+=`<div class="card" style="text-align:center"><div style="font-size:48px">📳</div><div style="font-size:20px;font-weight:700;margin:8px 0;color:#4f46e5">摇一摇赛跑</div><p style="color:#8892b0;font-size:13px">${gShakeActive?(gShakeJoined?'🏃 使劲摇！':'📝 先输入昵称加入比赛'):'⏳ 等待管理员开始比赛...'}</p></div>
-      <div class="card"><input type="text" placeholder="你的昵称" value="${esc(gShakeNick)}" oninput="gShakeNick=this.value" ${gShakeJoined?'disabled':''}>
-      ${!gShakeJoined?`<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="joinShake()" ${!gShakeActive?'disabled':''}>🏁 加入赛跑</button>`:''}
-      ${gShakeJoined?`<div style="margin-top:12px"><div style="background:#e5e7eb;border-radius:12px;height:24px;overflow:hidden"><div style="background:linear-gradient(90deg,#4f46e5,#6366f1);height:100%;width:${Math.min(gShakeProgress,100)}%;transition:width 0.2s;border-radius:12px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:11px;font-weight:600">${Math.round(gShakeProgress)}%</span></div></div><p style="text-align:center;color:#8892b0;font-size:12px;margin-top:4px">📱 疯狂摇手机 或 快速连点屏幕3次！</p><button id="manualShakeBtn" class="btn btn-w" style="width:100%;margin-top:8px" onclick="manualShake()">👆 点我摇一次</button></div>`:''}
+          if (gRpActive)
+            html += `<p style="text-align:center;color:#f59e0b;font-size:14px;animation:pulse 1s infinite">👇 猛戳红包！</p>`;
+        }
+        if (gTab === 'shake') {
+          html += `<div class="card" style="text-align:center"><div style="font-size:48px">📳</div><div style="font-size:20px;font-weight:700;margin:8px 0;color:#4f46e5">摇一摇赛跑</div><p style="color:#8892b0;font-size:13px">${gShakeActive ? (gShakeJoined ? '🏃 使劲摇！' : '📝 先输入昵称加入比赛') : '⏳ 等待管理员开始比赛...'}</p></div>
+      <div class="card"><input type="text" placeholder="你的昵称" value="${esc(gShakeNick)}" oninput="gShakeNick=this.value" ${gShakeJoined ? 'disabled' : ''}>
+      ${!gShakeJoined ? `<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="joinShake()" ${!gShakeActive ? 'disabled' : ''}>🏁 加入赛跑</button>` : ''}
+      ${gShakeJoined ? `<div style="margin-top:12px"><div style="background:#e5e7eb;border-radius:12px;height:24px;overflow:hidden"><div style="background:linear-gradient(90deg,#4f46e5,#6366f1);height:100%;width:${Math.min(gShakeProgress, 100)}%;transition:width 0.2s;border-radius:12px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:11px;font-weight:600">${Math.round(gShakeProgress)}%</span></div></div><p style="text-align:center;color:#8892b0;font-size:12px;margin-top:4px">📱 疯狂摇手机 或 快速连点屏幕3次！</p><button id="manualShakeBtn" class="btn btn-w" style="width:100%;margin-top:8px" onclick="manualShake()">👆 点我摇一次</button></div>` : ''}
       </div>`;
-  }
+        }
 
-  $('#p-game').innerHTML=html;
-  if(gTab==='quiz') loadRanks();
-}
+        $('#p-game').innerHTML = html;
+        if (gTab === 'quiz') loadRanks();
+      }
 
-async function startQuiz(){
-  const res=await post('/game/quiz/generate',{type:gQuizType,count:5,difficulty:gDiff});
-  if(res.code===0){gQuiz=res.data;gStarted=true;gAnswers={};gSubmitted=false;renderGame()}
-}
-async function submitQuiz(){
-  const answers=gQuiz.map((_,i)=>({index:i,answer:gAnswers[i]||''}));
-  const body=gTeam?{team:gTeamName||'队伍',answers}:{nickname:'玩家',answers};
-  const res=await post('/game/quiz/submit',body);
-  if(res.code===0){gScore=res.data.score;gSubmitted=true;gComment=res.data.comment;renderGame()}
-}
-async function loadRanks(){
-  const res=await get('/game/ranks'+(gRankMode==='team'?'?mode=team':''));
-  if(res.code===0){
-    const ranks=res.data||[];
-    const el=document.getElementById('rankList');if(!el)return;
-    el.innerHTML=ranks.length===0?'<p style="color:#9ca3af;text-align:center;padding:10px;font-size:12px">暂无记录</p>':
-      ranks.map((r,i)=>`<div class="rank-row"><span>${['🥇','🥈','🥉'][i]||(i+1)} ${esc(r.name)}</span><span class="rr">${r.score}分</span></div>`).join('');
-  }
-}
-async function checkIdiom(){
-  if(!gIdiomInput.trim())return;
-  const res=await post('/game/idiom/check',{word:gIdiomInput,prevWord:gIdiomPrev||'',difficulty:gDiff});
-  if(res.code===0){
-    if(res.data.valid){gIdiomChain.push(gIdiomInput);gIdiomPrev=gIdiomInput;gIdiomInput='';gIdiomResult='✅ 正确！';gIdiomHint=res.data.hint||''}
-    else{gIdiomResult='❌ '+res.data.reason}
-    renderGame();
-  }
-}
-async function checkFeihua(){
-  if(!gFeihuaInput.trim()||!gFeihuaKw.trim())return;
-  const res=await post('/game/feihua/check',{word:gFeihuaInput,keyword:gFeihuaKw});
-  if(res.code===0){gFeihuaResult=res.data.valid?'✅ 正确！':'❌ '+res.data.reason;gFeihuaInput='';renderGame()}
-}
-async function doVoice(){
-  if(!gVoiceText.trim())return;
-  const res=await post('/game/voice/transform',{text:gVoiceText,voiceType:gVoiceType});
-  gVoiceResult=res.data.msg||'完成';renderGame();
-}
-async function doVideo(){
-  if(!gVideoPrompt.trim()){alert('请输入视频描述');return}
-  const res=await post('/video/generate',{prompt:gVideoPrompt,duration:6});
-  gVideoResult='任务已提交！ID: '+(res.data.taskId||'处理中...');renderGame();
-}
-async function doMusic(){
-  if(!gMusicPrompt.trim()){alert('请输入音乐描述');return}
-  const res=await post('/music/generate',{prompt:gMusicPrompt,lyrics:gMusicLyrics,duration:30});
-  gMusicResult='任务已提交！ID: '+(res.data.taskId||'处理中...');renderGame();
-}
+      async function startQuiz() {
+        const res = await post('/game/quiz/generate', {
+          type: gQuizType,
+          count: 5,
+          difficulty: gDiff,
+        });
+        if (res.code === 0) {
+          gQuiz = res.data;
+          gStarted = true;
+          gAnswers = {};
+          gSubmitted = false;
+          renderGame();
+        }
+      }
+      async function submitQuiz() {
+        const answers = gQuiz.map((_, i) => ({ index: i, answer: gAnswers[i] || '' }));
+        const body = gTeam ? { team: gTeamName || '队伍', answers } : { nickname: '玩家', answers };
+        const res = await post('/game/quiz/submit', body);
+        if (res.code === 0) {
+          gScore = res.data.score;
+          gSubmitted = true;
+          gComment = res.data.comment;
+          renderGame();
+        }
+      }
+      async function loadRanks() {
+        const res = await get('/game/ranks' + (gRankMode === 'team' ? '?mode=team' : ''));
+        if (res.code === 0) {
+          const ranks = res.data || [];
+          const el = document.getElementById('rankList');
+          if (!el) return;
+          el.innerHTML =
+            ranks.length === 0
+              ? '<p style="color:#9ca3af;text-align:center;padding:10px;font-size:12px">暂无记录</p>'
+              : ranks
+                  .map(
+                    (r, i) =>
+                      `<div class="rank-row"><span>${['🥇', '🥈', '🥉'][i] || i + 1} ${esc(r.name)}</span><span class="rr">${r.score}分</span></div>`
+                  )
+                  .join('');
+        }
+      }
+      async function checkIdiom() {
+        if (!gIdiomInput.trim()) return;
+        const res = await post('/game/idiom/check', {
+          word: gIdiomInput,
+          prevWord: gIdiomPrev || '',
+          difficulty: gDiff,
+        });
+        if (res.code === 0) {
+          if (res.data.valid) {
+            gIdiomChain.push(gIdiomInput);
+            gIdiomPrev = gIdiomInput;
+            gIdiomInput = '';
+            gIdiomResult = '✅ 正确！';
+            gIdiomHint = res.data.hint || '';
+          } else {
+            gIdiomResult = '❌ ' + res.data.reason;
+          }
+          renderGame();
+        }
+      }
+      async function checkFeihua() {
+        if (!gFeihuaInput.trim() || !gFeihuaKw.trim()) return;
+        const res = await post('/game/feihua/check', { word: gFeihuaInput, keyword: gFeihuaKw });
+        if (res.code === 0) {
+          gFeihuaResult = res.data.valid ? '✅ 正确！' : '❌ ' + res.data.reason;
+          gFeihuaInput = '';
+          renderGame();
+        }
+      }
+      async function doVoice() {
+        if (!gVoiceText.trim()) return;
+        const res = await post('/game/voice/transform', {
+          text: gVoiceText,
+          voiceType: gVoiceType,
+        });
+        gVoiceResult = res.data.msg || '完成';
+        renderGame();
+      }
+      async function doVideo() {
+        if (!gVideoPrompt.trim()) {
+          alert('请输入视频描述');
+          return;
+        }
+        const res = await post('/video/generate', { prompt: gVideoPrompt, duration: 6 });
+        gVideoResult = '任务已提交！ID: ' + (res.data.taskId || '处理中...');
+        renderGame();
+      }
+      async function doMusic() {
+        if (!gMusicPrompt.trim()) {
+          alert('请输入音乐描述');
+          return;
+        }
+        const res = await post('/music/generate', {
+          prompt: gMusicPrompt,
+          lyrics: gMusicLyrics,
+          duration: 30,
+        });
+        gMusicResult = '任务已提交！ID: ' + (res.data.taskId || '处理中...');
+        renderGame();
+      }
 
+      // ===== 摇一摇赛跑 =====
+      var shakeSensor = null;
+      function setupShakeListener() {
+        if (
+          typeof DeviceMotionEvent !== 'undefined' &&
+          typeof DeviceMotionEvent.requestPermission === 'function'
+        ) {
+          // iOS 13+ 需要权限
+          DeviceMotionEvent.requestPermission()
+            .then(function (state) {
+              if (state === 'granted') startShakeSensor();
+            })
+            .catch(function () {});
+        } else {
+          startShakeSensor();
+        }
+      }
+      function startShakeSensor() {
+        if (shakeSensor) return;
+        var lastShake = 0;
+        shakeSensor = function (e) {
+          var acc = e.accelerationIncludingGravity;
+          if (!acc) return;
+          var force = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+          if (force > 15 && Date.now() - lastShake > 200 && gShakeJoined && gShakeActive) {
+            lastShake = Date.now();
+            post('/game/shake/shake', { raceId: gShakeRaceId, nickname: gShakeNick }).then(
+              function (res) {
+                if (res.code === 0 && res.data) {
+                  gShakeProgress = res.data.progress || 0;
+                  renderGame();
+                }
+              }
+            );
+          }
+        };
+        window.addEventListener('devicemotion', shakeSensor);
+      }
+      function stopShakeSensor() {
+        if (shakeSensor) {
+          window.removeEventListener('devicemotion', shakeSensor);
+          shakeSensor = null;
+        }
+      }
+      async function joinShake() {
+        if (!gShakeNick.trim()) {
+          alert('请输入昵称');
+          return;
+        }
+        var res = await post('/game/shake/join', { raceId: gShakeRaceId, nickname: gShakeNick });
+        if (res.code === 0) {
+          gShakeJoined = true;
+          setupShakeListener();
+          renderGame();
+        }
+      }
+      async function manualShake() {
+        if (!gShakeActive || !gShakeJoined || !gShakeRaceId) return;
+        var btn = document.getElementById('manualShakeBtn');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = '摇动中...';
+        }
+        var res = await post('/game/shake/shake', { raceId: gShakeRaceId, nickname: gShakeNick });
+        if (res.code === 0 && res.data) {
+          gShakeProgress = res.data.progress || 0;
+          renderGame();
+        }
+        setTimeout(function () {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '👆 点我摇一次';
+          }
+        }, 300);
+      }
 
-// ===== 摇一摇赛跑 =====
-var shakeSensor=null;
-function setupShakeListener(){
-  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
-    // iOS 13+ 需要权限
-    DeviceMotionEvent.requestPermission().then(function(state){
-      if(state==='granted') startShakeSensor();
-    }).catch(function(){});
-  }else{
-    startShakeSensor();
-  }
-}
-function startShakeSensor(){
-  if(shakeSensor) return;
-  var lastShake=0;
-  shakeSensor=function(e){
-    var acc=e.accelerationIncludingGravity;
-    if(!acc) return;
-    var force=Math.abs(acc.x)+Math.abs(acc.y)+Math.abs(acc.z);
-    if(force>15&&Date.now()-lastShake>200&&gShakeJoined&&gShakeActive){
-      lastShake=Date.now();
-      post('/game/shake/shake',{raceId:gShakeRaceId,nickname:gShakeNick}).then(function(res){
-        if(res.code===0&&res.data){gShakeProgress=res.data.progress||0;renderGame()}
+      // ===== 红包雨 =====
+      async function claimRedpacket() {
+        if (!gRpNick.trim()) {
+          alert('请输入昵称');
+          return;
+        }
+        var res = await post('/redpacket/claim', { nickname: gRpNick });
+        var el = document.getElementById('rpResult');
+        if (res.code === 0) {
+          el.innerHTML =
+            '<div style="font-size:36px">🎉</div><div style="font-size:24px;color:#10b981;font-weight:700;margin:8px 0">¥' +
+            res.data.amount.toFixed(2) +
+            '</div><div style="color:#8892b0">恭喜抢到红包！</div>';
+        } else {
+          el.innerHTML = '<div style="color:#ef4444">' + res.msg + '</div>';
+        }
+      }
+
+      // ===== 签到 =====
+      let gSigninName = '',
+        gSigninDept = '',
+        gSigninDone = false,
+        gSigninWxAvatar = '',
+        gSigninOpenid = '',
+        gSigninSource = '';
+      function renderSignin() {
+        if (gSigninDone) {
+          var avatarHtml = '';
+          if (gSigninSource === 'wechat' && gSigninWxAvatar) {
+            avatarHtml =
+              '<img src="' +
+              esc(gSigninWxAvatar) +
+              '" style="width:64px;height:64px;border-radius:50%;margin:8px 0" onerror="this.style.display=none">';
+          }
+          var sourceTag =
+            gSigninSource === 'wechat'
+              ? '<span style="display:inline-block;background:#07c160;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;margin-top:6px">微信授权登录</span>'
+              : '';
+          $('#p-signin').innerHTML =
+            '<div class="card" style="text-align:center"><div style="font-size:64px">✅</div><div style="font-size:24px;font-weight:700;color:#10b981;margin:12px 0">签到成功！</div>' +
+            avatarHtml +
+            '<p style="color:#8892b0">' +
+            esc(gSigninName) +
+            ' 已上大屏</p>' +
+            sourceTag +
+            '<button class="btn btn-p" style="margin-top:16px" onclick="gSigninDone=false;renderSignin()">再次签到</button></div>';
+          return;
+        }
+        $('#p-signin').innerHTML =
+          '<div class="card" style="text-align:center"><div style="font-size:48px">📋</div><div style="font-size:20px;font-weight:700;margin:8px 0">扫码签到</div><p style="color:#8892b0;font-size:13px">填写信息，签到上大屏</p></div><div class="card"><input type="text" placeholder="你的姓名 *" value="' +
+          esc(gSigninName) +
+          '" oninput="gSigninName=this.value"><input type="text" placeholder="部门（选填）" value="' +
+          esc(gSigninDept) +
+          '" oninput="gSigninDept=this.value"><button class="btn btn-s" style="width:100%" onclick="doSignin()">✅ 立即签到</button><div id="signinResult" style="text-align:center;margin-top:10px"></div></div>';
+      }
+      async function doSignin() {
+        if (!gSigninName.trim()) {
+          alert('请输入姓名');
+          return;
+        }
+        var res = await post('/signin/checkin', { nickname: gSigninName, dept: gSigninDept });
+        var el = document.getElementById('signinResult');
+        if (res.code === 0) {
+          gSigninDone = true;
+          renderSignin();
+        } else {
+          el.innerHTML = '<div style="color:#ef4444">' + res.msg + '</div>';
+        }
+      }
+      // ===== INIT =====
+      loadFeatures().then(() => renderHome());
+      setInterval(() => {
+        var activePanel = document.querySelector('.panel.active');
+        if (!activePanel) return;
+        var pid = activePanel.id;
+        if (pid === 'p-wall' && wallTab === 'wall') loadMessages();
+        if (pid === 'p-lottery') renderLotteryPage();
+        if (pid === 'p-game' && gTab === 'quiz') loadRanks();
+      }, 15000);
+    </script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+      socket.on('shake:raceStarted', function (data) {
+        gShakeRaceId = data.raceId;
+        gShakeActive = true;
+        gShakeJoined = false;
+        gShakeProgress = 0;
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-game' &&
+          gTab === 'shake'
+        )
+          renderGame();
       });
-    }
-  };
-  window.addEventListener('devicemotion',shakeSensor);
-}
-function stopShakeSensor(){
-  if(shakeSensor){window.removeEventListener('devicemotion',shakeSensor);shakeSensor=null}
-}
-async function joinShake(){
-  if(!gShakeNick.trim()){alert('请输入昵称');return}
-  var res=await post('/game/shake/join',{raceId:gShakeRaceId,nickname:gShakeNick});
-  if(res.code===0){gShakeJoined=true;setupShakeListener();renderGame()}
-}
-async function manualShake(){
-  if(!gShakeActive||!gShakeJoined||!gShakeRaceId) return;
-  var btn=document.getElementById('manualShakeBtn');
-  if(btn){btn.disabled=true;btn.textContent='摇动中...';}
-  var res=await post('/game/shake/shake',{raceId:gShakeRaceId,nickname:gShakeNick});
-  if(res.code===0&&res.data){gShakeProgress=res.data.progress||0;renderGame()}
-  setTimeout(function(){if(btn){btn.disabled=false;btn.textContent='👆 点我摇一次';}},300);
-}
+      socket.on('shake:winner', function (data) {
+        gShakeActive = false;
+        gShakeJoined = false;
+        stopShakeSensor();
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-game' &&
+          gTab === 'shake'
+        )
+          renderGame();
+      });
+      socket.on('redpacket:start', function (data) {
+        gRpActive = true;
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-game' &&
+          gTab === 'redpacket'
+        )
+          renderGame();
+      });
+      socket.on('redpacket:end', function () {
+        gRpActive = false;
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-game' &&
+          gTab === 'redpacket'
+        )
+          renderGame();
+      });
+      socket.on('shake:reset', function () {
+        gShakeActive = false;
+        gShakeJoined = false;
+        gShakeRaceId = null;
+        gShakeProgress = 0;
+        stopShakeSensor();
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-game' &&
+          gTab === 'shake'
+        )
+          renderGame();
+      });
+      socket.on('wall:updated', function () {
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-wall'
+        )
+          loadMessages();
+      });
+      socket.on('lottery:updated', function () {
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-lottery'
+        )
+          renderLotteryPage();
+      });
+      socket.on('game:ranksUpdated', function () {
+        if (
+          (document.querySelector('.panel.active') &&
+            document.querySelector('.panel.active').id) === 'p-game'
+        )
+          loadRanks();
+      });
+    </script>
 
-
-// ===== 红包雨 =====
-async function claimRedpacket(){
-  if(!gRpNick.trim()){alert("请输入昵称");return}
-  var res=await post("/redpacket/claim",{nickname:gRpNick});
-  var el=document.getElementById("rpResult");
-  if(res.code===0){el.innerHTML='<div style="font-size:36px">🎉</div><div style="font-size:24px;color:#10b981;font-weight:700;margin:8px 0">¥'+res.data.amount.toFixed(2)+'</div><div style="color:#8892b0">恭喜抢到红包！</div>'}
-  else{el.innerHTML='<div style="color:#ef4444">'+res.msg+'</div>'}
-}
-
-
-// ===== 签到 =====
-let gSigninName='',gSigninDept='',gSigninDone=false,gSigninWxAvatar='',gSigninOpenid='',gSigninSource='';
-function renderSignin(){
-  if(gSigninDone){
-    var avatarHtml='';
-    if(gSigninSource==='wechat'&&gSigninWxAvatar){
-      avatarHtml='<img src="'+esc(gSigninWxAvatar)+'" style="width:64px;height:64px;border-radius:50%;margin:8px 0" onerror="this.style.display=none">';
-    }
-    var sourceTag=gSigninSource==='wechat'?'<span style="display:inline-block;background:#07c160;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;margin-top:6px">微信授权登录</span>':'';
-    $('#p-signin').innerHTML='<div class="card" style="text-align:center"><div style="font-size:64px">✅</div><div style="font-size:24px;font-weight:700;color:#10b981;margin:12px 0">签到成功！</div>'+avatarHtml+'<p style="color:#8892b0">'+esc(gSigninName)+' 已上大屏</p>'+sourceTag+'<button class="btn btn-p" style="margin-top:16px" onclick="gSigninDone=false;renderSignin()">再次签到</button></div>';
-    return;
-  }
-  $('#p-signin').innerHTML='<div class="card" style="text-align:center"><div style="font-size:48px">📋</div><div style="font-size:20px;font-weight:700;margin:8px 0">扫码签到</div><p style="color:#8892b0;font-size:13px">填写信息，签到上大屏</p></div><div class="card"><input type="text" placeholder="你的姓名 *" value="'+esc(gSigninName)+'" oninput="gSigninName=this.value"><input type="text" placeholder="部门（选填）" value="'+esc(gSigninDept)+'" oninput="gSigninDept=this.value"><button class="btn btn-s" style="width:100%" onclick="doSignin()">✅ 立即签到</button><div id="signinResult" style="text-align:center;margin-top:10px"></div></div>';
-}
-async function doSignin(){
-  if(!gSigninName.trim()){alert('请输入姓名');return}
-  var res=await post('/signin/checkin',{nickname:gSigninName,dept:gSigninDept});
-  var el=document.getElementById('signinResult');
-  if(res.code===0){gSigninDone=true;renderSignin()}else{el.innerHTML='<div style="color:#ef4444">'+res.msg+'</div>'}
-}
-// ===== INIT =====
-loadFeatures().then(()=>renderHome());
-setInterval(()=>{
-  var activePanel=document.querySelector('.panel.active');
-  if(!activePanel) return;
-  var pid=activePanel.id;
-  if(pid==='p-wall'&&wallTab==='wall') loadMessages();
-  if(pid==='p-lottery') renderLotteryPage();
-  if(pid==='p-game'&&gTab==='quiz') loadRanks();
-},15000);
-</script>
-
-<script src="/socket.io/socket.io.js"></script>
-<script>
-var socket = io();
-socket.on('shake:raceStarted',function(data){gShakeRaceId=data.raceId;gShakeActive=true;gShakeJoined=false;gShakeProgress=0;if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-game'&&gTab==='shake')renderGame();});
-socket.on('shake:winner',function(data){gShakeActive=false;gShakeJoined=false;stopShakeSensor();if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-game'&&gTab==='shake')renderGame();});
-socket.on('redpacket:start',function(data){gRpActive=true;if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-game'&&gTab==='redpacket')renderGame();});
-socket.on('redpacket:end',function(){gRpActive=false;if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-game'&&gTab==='redpacket')renderGame();});
-socket.on('shake:reset',function(){gShakeActive=false;gShakeJoined=false;gShakeRaceId=null;gShakeProgress=0;stopShakeSensor();if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-game'&&gTab==='shake')renderGame();});
-socket.on('wall:updated',function(){if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-wall') loadMessages();});
-socket.on('lottery:updated',function(){if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-lottery') renderLotteryPage();});
-socket.on('game:ranksUpdated',function(){if((document.querySelector('.panel.active') && document.querySelector('.panel.active').id)==='p-game') loadRanks();});
-</script>
-
-<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/mobile/sw.js').catch(function(){})}</script>
-</body>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/mobile/sw.js').catch(function () {});
+      }
+    </script>
+  </body>
 </html>

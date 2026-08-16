@@ -9,7 +9,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, Date.now().toString(36) + ext);
-  }
+  },
 });
 const upload = multer({ storage, limits: { fileSize: config.upload.maxSize } });
 

@@ -1,252 +1,391 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>红包雨 - 大屏展示</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0a0a2e;overflow:hidden;height:100vh}
-canvas{display:block;position:fixed;top:0;left:0;z-index:0}
-.overlay{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10;text-align:center;pointer-events:none}
-.overlay h1{font-size:48px;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
-.stats{font-size:20px;color:#ffd93d}
-.claimed-list{position:fixed;right:20px;top:100px;width:260px;max-height:60vh;overflow-y:auto;z-index:10;display:flex;flex-direction:column;gap:6px}
-.claim-item{background:rgba(255,215,0,0.15);border-radius:10px;padding:8px 14px;font-size:14px;color:#ffd93d;animation:slideIn 0.3s ease-out}
-.claim-item .amount{font-weight:bold;color:#10b981}
-@keyframes slideIn{from{transform:translateX(50px);opacity:0}to{transform:translateX(0);opacity:1}}
-.hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);color:#8892b0;font-size:16px;z-index:10}
-</style>
-</head>
-<body>
-<canvas id="canvas"></canvas>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>红包雨 - 大屏展示</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        background: #0a0a2e;
+        overflow: hidden;
+        height: 100vh;
+      }
+      canvas {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 0;
+      }
+      .overlay {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        text-align: center;
+        pointer-events: none;
+      }
+      .overlay h1 {
+        font-size: 48px;
+        background: linear-gradient(135deg, #ef4444, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 4px;
+      }
+      .stats {
+        font-size: 20px;
+        color: #ffd93d;
+      }
+      .claimed-list {
+        position: fixed;
+        right: 20px;
+        top: 100px;
+        width: 260px;
+        max-height: 60vh;
+        overflow-y: auto;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .claim-item {
+        background: rgba(255, 215, 0, 0.15);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 14px;
+        color: #ffd93d;
+        animation: slideIn 0.3s ease-out;
+      }
+      .claim-item .amount {
+        font-weight: bold;
+        color: #10b981;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .hint {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #8892b0;
+        font-size: 16px;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
 
-<div class="overlay">
-  <h1>🧧 红包雨</h1>
-  <div class="stats" id="stats">等待管理员发射红包雨...</div>
-</div>
-<div class="claimed-list" id="claimedList"></div>
-<div class="hint">📱 手机扫码进入游戏 → 红包雨，点击抢红包！</div>
+    <div class="overlay">
+      <h1>🧧 红包雨</h1>
+      <div class="stats" id="stats">等待管理员发射红包雨...</div>
+    </div>
+    <div class="claimed-list" id="claimedList"></div>
+    <div class="hint">📱 手机扫码进入游戏 → 红包雨，点击抢红包！</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-(function(){
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-var W = window.innerWidth, H = window.innerHeight;
-canvas.width = W; canvas.height = H;
-window.addEventListener('resize', function(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight});
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      (function () {
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var W = window.innerWidth,
+          H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+        window.addEventListener('resize', function () {
+          W = canvas.width = window.innerWidth;
+          H = canvas.height = window.innerHeight;
+        });
 
-var packets = [];
-var rainActive = false;
-var elapsed = 0;
-var lastTime = 0;
-var debugMsgs = [];
-var wsConnected = false;
+        var packets = [];
+        var rainActive = false;
+        var elapsed = 0;
+        var lastTime = 0;
+        var debugMsgs = [];
+        var wsConnected = false;
 
-function esc(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+        function esc(s) {
+          var d = document.createElement('div');
+          d.textContent = String(s || '');
+          return d.innerHTML;
+        }
 
-// ---- 调试面板 ----
-var dbg = document.createElement('div');
-dbg.style.cssText = 'position:fixed;left:10px;bottom:10px;background:rgba(0,0,0,0.85);color:#0f0;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:12px;z-index:999;max-width:350px;max-height:200px;overflow-y:auto';
-dbg.innerHTML = '<div id="dbgStatus">⏳ 连接中...</div><div id="dbgEvent">等待事件...</div>';
-document.body.appendChild(dbg);
+        // ---- 调试面板 ----
+        var dbg = document.createElement('div');
+        dbg.style.cssText =
+          'position:fixed;left:10px;bottom:10px;background:rgba(0,0,0,0.85);color:#0f0;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:12px;z-index:999;max-width:350px;max-height:200px;overflow-y:auto';
+        dbg.innerHTML =
+          '<div id="dbgStatus">⏳ 连接中...</div><div id="dbgEvent">等待事件...</div>';
+        document.body.appendChild(dbg);
 
-function dbgLog(id, msg){ document.getElementById(id).textContent = msg; }
+        function dbgLog(id, msg) {
+          document.getElementById(id).textContent = msg;
+        }
 
-// ---- Socket.IO ----
-var socket = io();
+        // ---- Socket.IO ----
+        var socket = io();
 
-socket.on('connect', function(){
-  wsConnected = true;
-  dbgLog('dbgStatus', '✅ WS 已连接 id=' + socket.id);
-  console.log('[红包雨] 已连接', socket.id);
-});
-socket.on('disconnect', function(reason){
-  wsConnected = false;
-  dbgLog('dbgStatus', '❌ WS 断开: ' + reason);
-});
-socket.on('connect_error', function(err){
-  dbgLog('dbgStatus', '❌ 连接错误: ' + err.message);
-});
+        socket.on('connect', function () {
+          wsConnected = true;
+          dbgLog('dbgStatus', '✅ WS 已连接 id=' + socket.id);
+          console.log('[红包雨] 已连接', socket.id);
+        });
+        socket.on('disconnect', function (reason) {
+          wsConnected = false;
+          dbgLog('dbgStatus', '❌ WS 断开: ' + reason);
+        });
+        socket.on('connect_error', function (err) {
+          dbgLog('dbgStatus', '❌ 连接错误: ' + err.message);
+        });
 
-socket.on('redpacket:start', function(data){
-  dbgLog('dbgEvent', '🎯 收到 redpacket:start  count='+data.count+' dur='+data.duration);
-  console.log('[红包雨] 收到 start', data);
-  rainActive = true;
-  elapsed = 0;
-  lastTime = 0;
-  document.getElementById('claimedList').innerHTML = '';
-  document.getElementById('stats').textContent = '已抢: 0 / ' + data.count;
+        socket.on('redpacket:start', function (data) {
+          dbgLog(
+            'dbgEvent',
+            '🎯 收到 redpacket:start  count=' + data.count + ' dur=' + data.duration
+          );
+          console.log('[红包雨] 收到 start', data);
+          rainActive = true;
+          elapsed = 0;
+          lastTime = 0;
+          document.getElementById('claimedList').innerHTML = '';
+          document.getElementById('stats').textContent = '已抢: 0 / ' + data.count;
 
-  packets = [];
-  for(var i=0;i<data.count;i++){
-    packets.push({
-      x: 0.02 + Math.random()*0.96,
-      y: -0.05 - Math.random()*0.3,
-      delay: Math.random()*(data.duration||5)*0.5,
-      speed: 0.005 + Math.random()*0.007,
-      size: 40+Math.random()*30,
-      rotation: Math.random()*Math.PI*2,
-      rotSpeed: (Math.random()-0.5)*0.04,
-      claimed: false
-    });
-  }
-  if (!lastTime) requestAnimationFrame(loop);
-});
+          packets = [];
+          for (var i = 0; i < data.count; i++) {
+            packets.push({
+              x: 0.02 + Math.random() * 0.96,
+              y: -0.05 - Math.random() * 0.3,
+              delay: Math.random() * (data.duration || 5) * 0.5,
+              speed: 0.005 + Math.random() * 0.007,
+              size: 40 + Math.random() * 30,
+              rotation: Math.random() * Math.PI * 2,
+              rotSpeed: (Math.random() - 0.5) * 0.04,
+              claimed: false,
+            });
+          }
+          if (!lastTime) requestAnimationFrame(loop);
+        });
 
-socket.on('redpacket:claimed', function(data){
-  dbgLog('dbgEvent', '🎉 '+data.nickname+' 抢到 ¥'+data.amount.toFixed(2));
-  var claimedCount = document.querySelectorAll('.claim-item').length + 1;
-  document.getElementById('stats').textContent = '已抢: '+claimedCount+' / 剩余 '+data.remaining;
-  var list = document.getElementById('claimedList');
-  list.innerHTML = '<div class="claim-item">🎉 <strong>'+esc(data.nickname)+'</strong> 抢到 <span class="amount">¥'+data.amount.toFixed(2)+'</span></div>' + list.innerHTML;
-});
+        socket.on('redpacket:claimed', function (data) {
+          dbgLog('dbgEvent', '🎉 ' + data.nickname + ' 抢到 ¥' + data.amount.toFixed(2));
+          var claimedCount = document.querySelectorAll('.claim-item').length + 1;
+          document.getElementById('stats').textContent =
+            '已抢: ' + claimedCount + ' / 剩余 ' + data.remaining;
+          var list = document.getElementById('claimedList');
+          list.innerHTML =
+            '<div class="claim-item">🎉 <strong>' +
+            esc(data.nickname) +
+            '</strong> 抢到 <span class="amount">¥' +
+            data.amount.toFixed(2) +
+            '</span></div>' +
+            list.innerHTML;
+        });
 
-socket.on('redpacket:end', function(data){
-  rainActive = false;
-  dbgLog('dbgEvent', '🏁 红包雨结束 claimed='+data.claimed+'/'+data.total);
-  document.getElementById('stats').textContent = '红包雨结束！共抢走 '+data.claimed+' / '+data.total+' 个红包';
-});
+        socket.on('redpacket:end', function (data) {
+          rainActive = false;
+          dbgLog('dbgEvent', '🏁 红包雨结束 claimed=' + data.claimed + '/' + data.total);
+          document.getElementById('stats').textContent =
+            '红包雨结束！共抢走 ' + data.claimed + ' / ' + data.total + ' 个红包';
+        });
 
-var animId = null;
-function loop(time){
-  animId = requestAnimationFrame(loop);
-  if (!rainActive && packets.every(function(p){return p.y>1.2||p.claimed})) {
-    // 空闲状态：只在有 packets 时继续画最后一帧
-    if (packets.length===0 || packets.every(function(p){return p.y>1.2})) return;
-  }
+        var animId = null;
+        function loop(time) {
+          animId = requestAnimationFrame(loop);
+          if (
+            !rainActive &&
+            packets.every(function (p) {
+              return p.y > 1.2 || p.claimed;
+            })
+          ) {
+            // 空闲状态：只在有 packets 时继续画最后一帧
+            if (
+              packets.length === 0 ||
+              packets.every(function (p) {
+                return p.y > 1.2;
+              })
+            )
+              return;
+          }
 
-  var dt = lastTime ? Math.min((time-lastTime)/1000, 0.1) : 0.016;
-  lastTime = time;
-  elapsed += dt;
+          var dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0.016;
+          lastTime = time;
+          elapsed += dt;
 
-  ctx.clearRect(0,0,W,H);
+          ctx.clearRect(0, 0, W, H);
 
-  // 背景粒子
-  for(var i=0;i<30;i++){
-    ctx.fillStyle = 'rgba(255,215,0,'+(0.01+Math.random()*0.04)+')';
-    ctx.fillRect(Math.random()*W, Math.random()*H, 2+Math.random()*3, 2+Math.random()*3);
-  }
+          // 背景粒子
+          for (var i = 0; i < 30; i++) {
+            ctx.fillStyle = 'rgba(255,215,0,' + (0.01 + Math.random() * 0.04) + ')';
+            ctx.fillRect(
+              Math.random() * W,
+              Math.random() * H,
+              2 + Math.random() * 3,
+              2 + Math.random() * 3
+            );
+          }
 
-  // 未连接时显示提示
-  if (!wsConnected && packets.length === 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.font = '28px "Microsoft YaHei","PingFang SC",sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('WebSocket 未连接，请检查服务器', W/2, H/2);
-  }
+          // 未连接时显示提示
+          if (!wsConnected && packets.length === 0) {
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            ctx.font = '28px "Microsoft YaHei","PingFang SC",sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('WebSocket 未连接，请检查服务器', W / 2, H / 2);
+          }
 
-  for(var i=0;i<packets.length;i++){
-    var p = packets[i];
-    if (elapsed < p.delay || p.claimed) continue;
-    p.y += p.speed * dt * 60;
-    p.rotation += p.rotSpeed;
-    if (p.y > 1.15) { p.claimed = true; continue; }
+          for (var i = 0; i < packets.length; i++) {
+            var p = packets[i];
+            if (elapsed < p.delay || p.claimed) continue;
+            p.y += p.speed * dt * 60;
+            p.rotation += p.rotSpeed;
+            if (p.y > 1.15) {
+              p.claimed = true;
+              continue;
+            }
 
-    var cx = p.x * W, cy = p.y * H, s = p.size;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(p.rotation);
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 12;
+            var cx = p.x * W,
+              cy = p.y * H,
+              s = p.size;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(p.rotation);
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 12;
 
-    // 红包主体
-    var grad = ctx.createLinearGradient(-s/2, 0, s/2, 0);
-    grad.addColorStop(0, '#dc2626');
-    grad.addColorStop(0.5, '#ff4444');
-    grad.addColorStop(1, '#b91c1c');
-    ctx.fillStyle = grad;
-    var r = s*0.18;
-    ctx.beginPath();
-    ctx.moveTo(-s/2+r, -s*0.7);
-    ctx.lineTo(s/2-r, -s*0.7);
-    ctx.quadraticCurveTo(s/2, -s*0.7, s/2, -s*0.7+r);
-    ctx.lineTo(s/2, s*0.35-r);
-    ctx.quadraticCurveTo(s/2, s*0.35, s/2-r, s*0.35);
-    ctx.lineTo(-s/2+r, s*0.35);
-    ctx.quadraticCurveTo(-s/2, s*0.35, -s/2, s*0.35-r);
-    ctx.lineTo(-s/2, -s*0.7+r);
-    ctx.quadraticCurveTo(-s/2, -s*0.7, -s/2+r, -s*0.7);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
+            // 红包主体
+            var grad = ctx.createLinearGradient(-s / 2, 0, s / 2, 0);
+            grad.addColorStop(0, '#dc2626');
+            grad.addColorStop(0.5, '#ff4444');
+            grad.addColorStop(1, '#b91c1c');
+            ctx.fillStyle = grad;
+            var r = s * 0.18;
+            ctx.beginPath();
+            ctx.moveTo(-s / 2 + r, -s * 0.7);
+            ctx.lineTo(s / 2 - r, -s * 0.7);
+            ctx.quadraticCurveTo(s / 2, -s * 0.7, s / 2, -s * 0.7 + r);
+            ctx.lineTo(s / 2, s * 0.35 - r);
+            ctx.quadraticCurveTo(s / 2, s * 0.35, s / 2 - r, s * 0.35);
+            ctx.lineTo(-s / 2 + r, s * 0.35);
+            ctx.quadraticCurveTo(-s / 2, s * 0.35, -s / 2, s * 0.35 - r);
+            ctx.lineTo(-s / 2, -s * 0.7 + r);
+            ctx.quadraticCurveTo(-s / 2, -s * 0.7, -s / 2 + r, -s * 0.7);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
 
-    // 金色横条
-    ctx.fillStyle = '#ffd700';
-    ctx.fillRect(-s*0.4, -s*0.3, s*0.8, s*0.14);
+            // 金色横条
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(-s * 0.4, -s * 0.3, s * 0.8, s * 0.14);
 
-    // "开"字
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(0, s*0.04, s*0.22, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#dc2626';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = '#b91c1c';
-    ctx.font = 'bold '+(s*0.4)+'px "Microsoft YaHei","PingFang SC",sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('开', 0, s*0.05);
-    ctx.restore();
-  }
-}
-})();
-</script>
+            // "开"字
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(0, s * 0.04, s * 0.22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.fillStyle = '#b91c1c';
+            ctx.font = 'bold ' + s * 0.4 + 'px "Microsoft YaHei","PingFang SC",sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('开', 0, s * 0.05);
+            ctx.restore();
+          }
+        }
+      })();
+    </script>
 
-<div class="qr-code" style="position:fixed;bottom:20px;left:20px;z-index:100;text-align:center;cursor:grab;user-select:none;" id="qrBox">
-  <img class="qr-img" src="" alt="扫码参与" style="width:100px;height:100px;background:#fff;border-radius:10px;padding:4px;">
-  <p style="color:#8892b0;font-size:12px;margin-top:4px;">微信扫一扫</p>
-</div>
-<script>
-(function(){
-  var img = document.querySelector('.qr-img');
-  if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
-})();
-// ---- 拖拽二维码 ----
-(function(){
-  var box = document.getElementById('qrBox');
-  if (!box) return;
-  var dragging = false, startX, startY, startLeft, startTop;
-  function onStart(e) {
-    e.preventDefault();
-    dragging = true;
-    box.style.cursor = 'grabbing';
-    var t = e.touches ? e.touches[0] : e;
-    startX = t.clientX;
-    startY = t.clientY;
-    var rect = box.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop = rect.top;
-    // 拖拽开始时把 bottom 清掉，改用 top 定位
-    box.style.bottom = 'auto';
-    box.style.right = 'auto';
-    box.style.left = startLeft + 'px';
-    box.style.top = startTop + 'px';
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    e.preventDefault();
-    var t = e.touches ? e.touches[0] : e;
-    var dx = t.clientX - startX;
-    var dy = t.clientY - startY;
-    box.style.left = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
-    box.style.top = Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
-    box.style.bottom = 'auto';
-  }
-  function onEnd() {
-    dragging = false;
-    box.style.cursor = 'grab';
-  }
-  box.addEventListener('mousedown', onStart);
-  box.addEventListener('touchstart', onStart, { passive: false });
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('mouseup', onEnd);
-  document.addEventListener('touchend', onEnd);
-})();
-</script>
-</body>
+    <div
+      class="qr-code"
+      style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 100;
+        text-align: center;
+        cursor: grab;
+        user-select: none;
+      "
+      id="qrBox"
+    >
+      <img
+        class="qr-img"
+        src=""
+        alt="扫码参与"
+        style="width: 100px; height: 100px; background: #fff; border-radius: 10px; padding: 4px"
+      />
+      <p style="color: #8892b0; font-size: 12px; margin-top: 4px">微信扫一扫</p>
+    </div>
+    <script>
+      (function () {
+        var img = document.querySelector('.qr-img');
+        if (img) img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/');
+      })();
+      // ---- 拖拽二维码 ----
+      (function () {
+        var box = document.getElementById('qrBox');
+        if (!box) return;
+        var dragging = false,
+          startX,
+          startY,
+          startLeft,
+          startTop;
+        function onStart(e) {
+          e.preventDefault();
+          dragging = true;
+          box.style.cursor = 'grabbing';
+          var t = e.touches ? e.touches[0] : e;
+          startX = t.clientX;
+          startY = t.clientY;
+          var rect = box.getBoundingClientRect();
+          startLeft = rect.left;
+          startTop = rect.top;
+          // 拖拽开始时把 bottom 清掉，改用 top 定位
+          box.style.bottom = 'auto';
+          box.style.right = 'auto';
+          box.style.left = startLeft + 'px';
+          box.style.top = startTop + 'px';
+        }
+        function onMove(e) {
+          if (!dragging) return;
+          e.preventDefault();
+          var t = e.touches ? e.touches[0] : e;
+          var dx = t.clientX - startX;
+          var dy = t.clientY - startY;
+          box.style.left =
+            Math.max(0, Math.min(window.innerWidth - box.offsetWidth, startLeft + dx)) + 'px';
+          box.style.top =
+            Math.max(0, Math.min(window.innerHeight - box.offsetHeight, startTop + dy)) + 'px';
+          box.style.bottom = 'auto';
+        }
+        function onEnd() {
+          dragging = false;
+          box.style.cursor = 'grab';
+        }
+        box.addEventListener('mousedown', onStart);
+        box.addEventListener('touchstart', onStart, { passive: false });
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchend', onEnd);
+      })();
+    </script>
+  </body>
 </html>

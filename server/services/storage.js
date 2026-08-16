@@ -11,11 +11,13 @@ const files = {
   game: path.join(DATA_DIR, 'game.json'),
   avatar: path.join(DATA_DIR, 'avatar.json'),
   settings: path.join(DATA_DIR, 'settings.json'),
-  drawn: path.join(DATA_DIR, 'drawn.json')
+  drawn: path.join(DATA_DIR, 'drawn.json'),
 };
 
 // 留言墙
-function getMessages() { return readJSON(files.messages, []); }
+function getMessages() {
+  return readJSON(files.messages, []);
+}
 function addMessage(msg) {
   const msgs = getMessages();
   const item = { ...msg, id: Date.now().toString(36), time: new Date().toISOString(), likes: 0 };
@@ -25,22 +27,32 @@ function addMessage(msg) {
 }
 function likeMessage(id) {
   const msgs = getMessages();
-  const msg = msgs.find(m => m.id === id);
+  const msg = msgs.find((m) => m.id === id);
   if (msg) msg.likes = (msg.likes || 0) + 1;
   writeJSON(files.messages, msgs);
   return msg;
 }
 
 // 抽奖
-function getLottery() { return readJSON(files.lottery, { prizes: [], winners: [], pool: [], blacklist: [], drawn: [] }); }
-function saveLottery(data) { writeJSON(files.lottery, data); }
+function getLottery() {
+  return readJSON(files.lottery, { prizes: [], winners: [], pool: [], blacklist: [], drawn: [] });
+}
+function saveLottery(data) {
+  writeJSON(files.lottery, data);
+}
 
 // 游戏
-function getGame() { return readJSON(files.game, { scores: {} }); }
-function saveGame(data) { writeJSON(files.game, data); }
+function getGame() {
+  return readJSON(files.game, { scores: {} });
+}
+function saveGame(data) {
+  writeJSON(files.game, data);
+}
 
 // 头像
-function getAvatars() { return readJSON(files.avatar, []); }
+function getAvatars() {
+  return readJSON(files.avatar, []);
+}
 function addAvatar(record) {
   const records = getAvatars();
   const item = { ...record, id: Date.now().toString(36), time: new Date().toISOString() };
@@ -50,11 +62,34 @@ function addAvatar(record) {
 }
 
 // 设置
-function getSettings() { return readJSON(files.settings, { features: { wenan: true, avatar: true, wall: true, lottery: true, game: true } }); }
-function getDrawnMessages() { return readJSON(files.drawn, []); }
-function saveDrawnMessages(ids) { writeJSON(files.drawn, ids); }
+function getSettings() {
+  return readJSON(files.settings, {
+    features: { wenan: true, avatar: true, wall: true, lottery: true, game: true },
+  });
+}
+function getDrawnMessages() {
+  return readJSON(files.drawn, []);
+}
+function saveDrawnMessages(ids) {
+  writeJSON(files.drawn, ids);
+}
 
-function saveSettings(s) { writeJSON(files.settings, s); }
+function saveSettings(s) {
+  writeJSON(files.settings, s);
+}
 
 module.exports = {
-  getDrawnMessages, saveDrawnMessages, getMessages, addMessage, likeMessage, getLottery, saveLottery, getGame, saveGame, getAvatars, addAvatar, getSettings, saveSettings };
+  getDrawnMessages,
+  saveDrawnMessages,
+  getMessages,
+  addMessage,
+  likeMessage,
+  getLottery,
+  saveLottery,
+  getGame,
+  saveGame,
+  getAvatars,
+  addAvatar,
+  getSettings,
+  saveSettings,
+};
