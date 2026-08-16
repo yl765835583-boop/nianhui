@@ -1,0 +1,27 @@
+{
+  "name": "nianhui-ai-toolkit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "年会 AI 工具箱 —— 仓库级工程化配置（代码规范 / 提交规范 / 格式化）",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,json,md,css,html}": "prettier --write",
+    "server/**/*.js": "eslint --fix"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1",
+    "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6"
+  }
+}
