@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "express-ld5z",
   "version": "1.0.0",
   "description": "年会 AI 工具箱",
@@ -12,7 +12,7 @@
   "policyThreshold": 60,
   "envParams": {
     "ADMIN_TOKEN": "nianhui-admin-2026",
-    "WECHAT_SCOPE": "snsapi_base"
+    "WECHAT_SCOPE": "snsapi_userinfo"
   },
   "customLogs": "stdout",
   "initialDelaySeconds": 2
