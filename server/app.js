@@ -21,6 +21,9 @@ app.use(
   })
 );
 app.use('/uploads', express.static(config.upload.dir));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
 
 app.use(require('./middleware/auth'));
 app.use(require('./middleware/rateLimit'));

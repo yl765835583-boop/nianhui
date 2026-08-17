@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>年会 AI 工具箱</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        background: radial-gradient(1200px 600px at 10% -10%, #2a2158 0%, transparent 50%),
+          radial-gradient(900px 500px at 110% 10%, #4a1d3a 0%, transparent 46%), #0a0a2e;
+        color: #fff;
+        padding: 32px 20px 48px;
+      }
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 34px;
+        background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .sub {
+        color: #8892b0;
+        margin: 10px 0 28px;
+        font-size: 15px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+      }
+      a.card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 20px;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+      }
+      a.card:hover {
+        transform: translateY(-2px);
+        border-color: #ffd93d;
+      }
+      .emoji {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+      .card h2 {
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .card p {
+        color: #8892b0;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .note {
+        margin-top: 24px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>年会 AI 工具箱</h1>
+      <p class="sub">选一个入口开始：后台管流程，大屏投现场，手机给同事用。</p>
+      <div class="grid">
+        <a class="card" href="/admin/">
+          <div class="emoji">🎯</div>
+          <h2>管理后台</h2>
+          <p>开关功能、导入抽奖名单、看留言和签到。管理员用。</p>
+        </a>
+        <a class="card" href="/screen/index.html">
+          <div class="emoji">🖥️</div>
+          <h2>现场大屏</h2>
+          <p>留言墙、抽奖、排行榜、签到码。投到投影仪或电视。</p>
+        </a>
+        <a class="card" href="/mobile/">
+          <div class="emoji">📱</div>
+          <h2>手机端 H5</h2>
+          <p>发留言、参与抽奖和游戏。把这个链接发给同事。</p>
+        </a>
+        <a class="card" href="/screen/wall.html">
+          <div class="emoji">💬</div>
+          <h2>留言墙</h2>
+          <p>单独打开留言大屏，适合全场弹幕。</p>
+        </a>
+        <a class="card" href="/screen/lottery.html">
+          <div class="emoji">🎰</div>
+          <h2>抽奖大屏</h2>
+          <p>单独打开抽奖滚动开奖页。</p>
+        </a>
+        <a class="card" href="/api/health">
+          <div class="emoji">✅</div>
+          <h2>服务状态</h2>
+          <p>检查后端是否在线。正常会返回 status: ok。</p>
+        </a>
+      </div>
+      <p class="note">
+        微信扫码签到请用管理后台或大屏上的小程序码。本页只提供网页入口，不替代微信小程序发布。
+      </p>
+    </div>
+  </body>
+</html>

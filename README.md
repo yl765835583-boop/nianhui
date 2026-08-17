@@ -1,4 +1,4 @@
-﻿# 年会 AI 工具箱
+# 年会 AI 工具箱
 
 多端年会互动工具，集成 AI 大模型能力，覆盖年会全流程。
 
@@ -76,6 +76,39 @@ cd server && npm install && node app.js
 ### 4. 小程序
 
 用微信开发者工具打开 `miniapp/` 目录，修改 `app.js` 中的 `apiBase` 为实际服务器地址。
+
+## 微信云托管发版（别人才能打开）
+
+代码已推到 GitHub，但云托管不会自动更新。打开 [微信云托管服务页](https://cloud.weixin.qq.com/cloudrun/service) 后按下面做：
+
+1. 点服务 **`express-ld5z`**；没有就点「新建服务」，服务名填 `express-ld5z`，端口 **80**。
+2. 点 **部署** / **新建版本**。
+3. 上传方式选 **拉取仓库**（仓库 `yl765835583-boop/nianhui`，分支 `master`）或 **本地代码包**（把本仓库打成 zip，不要带 `node_modules`）。
+4. 构建方式选 **Dockerfile**，容器端口 **80**，开通 **公网访问**。
+5. 环境变量至少填这些（密钥不要写进 Git）：
+
+| 变量 | 说明 |
+| --- | --- |
+| `ADMIN_TOKEN` | 后台口令，默认 `nianhui-admin-2026`，正式环境请改掉 |
+| `WECHAT_SCOPE` | `snsapi_userinfo` |
+| `WECHAT_APPID` | 公众号 / 小程序 AppID |
+| `WECHAT_APPSECRET` | 对应 Secret |
+| `DEEPSEEK_KEY` / `MINIMAX_KEY` | 至少一个 AI Key，否则走 Mock |
+| `PUBLIC_URL` | 部署成功后的 `https://...` 公网域名 |
+
+6. 等版本变成「运行中」，复制「默认域名」。
+7. 用浏览器打开：
+
+- `/` 入口页
+- `/admin/` 管理后台
+- `/mobile/` 手机端
+- `/screen/index.html` 大屏
+- `/api/health` 应返回 `status: ok`
+
+8. 微信侧再配两处，否则扫码会失败：
+
+- 公众号后台 → 网页授权域名 = 上面那个域名（去掉 `https://`）
+- 小程序后台 → 服务器域名 request/uploadFile = 同一个 `https://...` 源；然后上传并提交小程序，或先发体验版并把大屏二维码切到「体验版」
 
 ## 管理员操作流程
 

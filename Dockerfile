@@ -1,4 +1,4 @@
-﻿# 年会 AI 工具箱 - 微信云托管 Dockerfile
+# 年会 AI 工具箱 - 微信云托管 Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
@@ -12,6 +12,7 @@ COPY server/ ./server/
 COPY admin/ ./admin/
 COPY screen/ ./screen/
 COPY mobile/ ./mobile/
+COPY public/ ./public/
 
 # 创建数据目录
 RUN mkdir -p server/data/uploads
