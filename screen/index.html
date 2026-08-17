@@ -703,7 +703,7 @@
       (function () {
         var img = document.querySelector('.qr-img');
         if (img)
-          img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/api/signin/scan');
+          img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/mobile/?scan=1');
         var box = document.getElementById('qrBox'),
           dragging = false,
           sX,
@@ -1084,6 +1084,9 @@
             (data.dept ? '<div class="sdept">' + esc(data.dept) + '</div>' : '') +
             '</div>'
         );
+      });
+      socket.on('signin:updated', function () {
+        loadSignin();
       });
       socket.on('signin:reset', function () {
         signinList = [];

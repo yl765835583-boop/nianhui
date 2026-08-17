@@ -377,12 +377,29 @@
         gSigninOpenid = '',
         gSigninSource = '',
         gSigninTotal = '';
+      function rememberUid(uid) {
+        if (!uid) return;
+        try {
+          localStorage.setItem('token', uid);
+        } catch (e) {}
+      }
+      function myUid() {
+        try {
+          return localStorage.getItem('token') || '';
+        } catch (e) {
+          return '';
+        }
+      }
+      (function () {
+        var q0 = new URLSearchParams(location.search);
+        if (q0.get('uid')) rememberUid(q0.get('uid'));
+      })();
       async function get(p) {
         const r = await fetch(API + '/api' + p, {
-          headers: { 'X-User-Token': localStorage.getItem('token') || '' },
+          headers: { 'X-User-Token': myUid() },
         });
         let t = r.headers.get('X-User-Token');
-        if (t) localStorage.setItem('token', t);
+        if (t) rememberUid(t);
         return r.json();
       }
       async function post(p, b) {
@@ -390,12 +407,12 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-Token': localStorage.getItem('token') || '',
+            'X-User-Token': myUid(),
           },
           body: JSON.stringify(b),
         });
         let t = r.headers.get('X-User-Token');
-        if (t) localStorage.setItem('token', t);
+        if (t) rememberUid(t);
         return r.json();
       }
       function $(s) {
@@ -1098,12 +1115,21 @@
       // ===== 签到 =====
       async function autoScanCheckin() {
         try {
-          var res = await post('/signin/scan', {});
-          if (res && res.code === 0 && res.data) {
+          var me = await get('/signin/me');
+          if (me && me.code === 0 && me.data && me.data.signed) {
             gSigninDone = true;
-            gSigninName = res.data.name || gSigninName || '来宾';
-            gSigninTotal = res.data.total || '';
+            gSigninName = me.data.name || gSigninName;
+            gSigninDept = me.data.dept || gSigninDept;
+            gSigninTotal = me.data.total || gSigninTotal;
             gSigninSource = gSigninSource || 'scan';
+          } else {
+            var res = await post('/signin/scan', {});
+            if (res && res.code === 0 && res.data) {
+              gSigninDone = true;
+              gSigninName = res.data.name || gSigninName || '来宾';
+              gSigninTotal = res.data.total || '';
+              gSigninSource = gSigninSource || 'scan';
+            }
           }
         } catch (e) {}
         var nav = document.querySelector('.nav-item[data-p="signin"]');
@@ -1112,6 +1138,7 @@
       (function () {
         var q = new URLSearchParams(location.search);
         var fromWechat = /MicroMessenger/i.test(navigator.userAgent || '');
+        if (q.get('uid')) rememberUid(q.get('uid'));
         if (q.get('signed') === '1') {
           gSigninDone = true;
           gSigninName = q.get('name') || '微信用户';
@@ -1152,18 +1179,22 @@
             (gSigninTotal ? '，当前 ' + esc(gSigninTotal) + ' 人' : '') +
             '</p>' +
             sourceTag +
-            '<button class="btn btn-p" style="margin-top:16px" onclick="gSigninDone=false;renderSignin()">再次签到</button></div>';
+            '<button class="btn btn-p" style="margin-top:16px" onclick="showRename()">修改姓名</button></div>';
           return;
         }
         $('#p-signin').innerHTML =
-          '<div class="card" style="text-align:center"><div style="font-size:48px">📋</div><div style="font-size:20px;font-weight:700;margin:8px 0">扫码签到</div><p style="color:#8892b0;font-size:13px">填写信息，签到上大屏</p></div><div class="card"><input type="text" placeholder="你的姓名 *" value="' +
-          esc(gSigninName) +
+          '<div class="card" style="text-align:center"><div style="font-size:48px">📋</div><div style="font-size:20px;font-weight:700;margin:8px 0">扫码签到</div><p style="color:#8892b0;font-size:13px">填写信息，签到上大屏。同一人只能签一次，改名不会再增加人数。</p></div><div class="card"><input type="text" placeholder="你的姓名 *" value="' +
+          esc(gSigninName && gSigninName.indexOf('来宾') === 0 ? '' : gSigninName) +
           '" oninput="gSigninName=this.value"><input type="text" placeholder="部门（选填）" value="' +
           esc(gSigninDept) +
           '" oninput="gSigninDept=this.value"><button class="btn btn-s" style="width:100%" onclick="doSignin()">✅ 立即签到</button><div id="signinResult" style="text-align:center;margin-top:10px"></div></div>';
       }
+      function showRename() {
+        gSigninDone = false;
+        renderSignin();
+      }
       async function doSignin() {
-        if (!gSigninName.trim()) {
+        if (!gSigninName.trim() || gSigninName.indexOf('来宾') === 0) {
           alert('请输入姓名');
           return;
         }
@@ -1171,6 +1202,12 @@
         var el = document.getElementById('signinResult');
         if (res.code === 0) {
           gSigninDone = true;
+          gSigninName = (res.data && res.data.name) || gSigninName;
+          gSigninTotal = (res.data && res.data.total) || gSigninTotal;
+          try {
+            localStorage.setItem('nh_signed', '1');
+            localStorage.setItem('nh_signed_name', gSigninName);
+          } catch (e) {}
           renderSignin();
         } else {
           el.innerHTML = '<div style="color:#ef4444">' + res.msg + '</div>';

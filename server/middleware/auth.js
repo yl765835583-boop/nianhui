@@ -17,12 +17,18 @@ function readCookie(header, name) {
 }
 
 module.exports = function (req, res, next) {
-  let token = req.headers['x-user-token'] || readCookie(req.headers.cookie, 'nh_uid');
-  if (!token) {
+  let token = req.headers['x-user-token'] || req.query.uid || readCookie(req.headers.cookie, 'nh_uid');
+  if (!token || typeof token !== 'string' || token.length < 8 || token.length > 80) {
     token = 'u_' + genId();
   }
   req.userToken = token;
   res.set('X-User-Token', token);
-  res.set('Set-Cookie', 'nh_uid=' + encodeURIComponent(token) + '; Path=/; Max-Age=604800; SameSite=Lax');
+  const httpsOn = req.secure || String(req.headers['x-forwarded-proto'] || '') === 'https';
+  const cookie =
+    'nh_uid=' +
+    encodeURIComponent(token) +
+    '; Path=/; Max-Age=31536000; SameSite=' +
+    (httpsOn ? 'None; Secure' : 'Lax');
+  res.set('Set-Cookie', cookie);
   next();
 };

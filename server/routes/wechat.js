@@ -28,7 +28,7 @@ function canUseWechatOauth(req) {
 // 微信 OAuth 入口：扫码后跳转到微信授权页
 router.get('/auth', (req, res) => {
   if (!canUseWechatOauth(req)) {
-    return res.redirect('/api/signin/scan');
+    return res.redirect('/mobile/?scan=1');
   }
 
   const appId = config.wechat.appId;
@@ -80,11 +80,11 @@ router.get('/callback', async (req, res) => {
 
   if (!code) {
     // 用户拒绝授权，回退到手动签到
-    return res.redirect('/api/signin/scan');
+    return res.redirect('/mobile/?scan=1');
   }
 
   if (!isConfigured()) {
-    return res.redirect('/api/signin/scan');
+    return res.redirect('/mobile/?scan=1');
   }
 
   try {
@@ -106,7 +106,7 @@ router.get('/callback', async (req, res) => {
 
     if (tokenData.errcode) {
       console.error('[微信OAuth] token 换取失败:', tokenData);
-      return res.redirect('/api/signin/scan');
+      return res.redirect('/mobile/?scan=1');
     }
 
     const { access_token, openid } = tokenData;
@@ -125,7 +125,7 @@ router.get('/callback', async (req, res) => {
 
     if (userData.errcode) {
       console.error('[微信OAuth] 用户信息获取失败:', userData);
-      return res.redirect('/api/signin/scan');
+      return res.redirect('/mobile/?scan=1');
     }
 
     const nickname = userData.nickname || '微信用户' + openid.substring(0, 6);
@@ -169,7 +169,7 @@ router.get('/callback', async (req, res) => {
     res.redirect('/mobile/?' + params.toString());
   } catch (err) {
     console.error('[微信OAuth] 回调异常:', err);
-    res.redirect('/api/signin/scan');
+    res.redirect('/mobile/?scan=1');
   }
 });
 
@@ -265,7 +265,7 @@ router.get('/miniapp-qrcode', async (req, res) => {
       ? result.buf.toString('utf-8').substring(0, 200)
       : 'empty status ' + result.status;
     console.warn('[小程序码] 微信未返回图片，回退 H5 码:', errText);
-    const fallbackUrl = getBaseUrl(req) + '/api/signin/scan';
+    const fallbackUrl = getBaseUrl(req) + '/mobile/?scan=1';
     const svg = await QRCode.toString(fallbackUrl, {
       type: 'svg',
       margin: 2,
@@ -278,7 +278,7 @@ router.get('/miniapp-qrcode', async (req, res) => {
   } catch (err) {
     console.error('[小程序码] 生成失败，回退 H5 码:', err);
     try {
-      const fallbackUrl = getBaseUrl(req) + '/api/signin/scan';
+      const fallbackUrl = getBaseUrl(req) + '/mobile/?scan=1';
       const svg = await QRCode.toString(fallbackUrl, {
         type: 'svg',
         margin: 2,

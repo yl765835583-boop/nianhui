@@ -10,13 +10,69 @@ function getData() {
   return game;
 }
 
+function findExisting(game, extra) {
+  extra = extra || {};
+  if (extra.openid) {
+    const byOpenid = game.signins.find((s) => s.openid && s.openid === extra.openid);
+    if (byOpenid) return byOpenid;
+  }
+  if (extra.token) {
+    const byToken = game.signins.find((s) => s.token && s.token === extra.token);
+    if (byToken) return byToken;
+  }
+  return null;
+}
+
+function publicRecord(record, total, extra) {
+  extra = extra || {};
+  return {
+    name: record.name,
+    dept: record.dept || '',
+    avatar: record.avatar || '',
+    total: total,
+    already: !!extra.already,
+    updated: !!extra.updated,
+  };
+}
+
 function upsertScanSignin(game, token, extra) {
   extra = extra || {};
-  let existing =
-    (extra.openid && game.signins.find((s) => s.openid === extra.openid)) ||
-    (token && game.signins.find((s) => s.token === token));
+  const existing = findExisting(game, {
+    token: token,
+    openid: extra.openid,
+  });
   if (existing) {
-    return { record: existing, created: false };
+    let updated = false;
+    if (extra.name && extra.name !== existing.name) {
+      existing.name = extra.name;
+      updated = true;
+    }
+    if (extra.dept !== undefined && extra.dept !== existing.dept) {
+      existing.dept = extra.dept;
+      updated = true;
+    }
+    if (extra.openid && !existing.openid) {
+      existing.openid = extra.openid;
+      updated = true;
+    }
+    if (extra.avatar && extra.avatar !== existing.avatar) {
+      existing.avatar = extra.avatar;
+      updated = true;
+    }
+    if (token && !existing.token) {
+      existing.token = token;
+      updated = true;
+    }
+    if (updated) {
+      storage.saveGame(game);
+      ws.emit('signin:updated', {
+        name: existing.name,
+        dept: existing.dept,
+        avatar: existing.avatar || '',
+        total: game.signins.length,
+      });
+    }
+    return { record: existing, created: false, updated: updated };
   }
   const n = game.signins.length + 1;
   const record = {
@@ -37,7 +93,7 @@ function upsertScanSignin(game, token, extra) {
     avatar: record.avatar || '',
     total: game.signins.length,
   });
-  return { record, created: true };
+  return { record, created: true, updated: false };
 }
 
 function applyScan(req) {
@@ -53,6 +109,7 @@ router.get('/scan', (req, res) => {
     signed: '1',
     name: record.name,
     total: String(total),
+    uid: req.userToken,
   });
   res.redirect('/mobile/?' + params.toString());
 });
@@ -63,19 +120,38 @@ router.post('/scan', (req, res) => {
   res.json(ok({ name: record.name, total }));
 });
 
-// 用户签到
+// 当前身份是否已签到
+router.get('/me', (req, res) => {
+  const game = getData();
+  const existing = findExisting(game, { token: req.userToken, openid: req.query.openid });
+  if (!existing) return res.json(ok({ signed: false, total: game.signins.length }));
+  res.json(
+    ok({
+      signed: true,
+      name: existing.name,
+      dept: existing.dept || '',
+      avatar: existing.avatar || '',
+      total: game.signins.length,
+    })
+  );
+});
+
+// 用户签到：同一人改名只更新，不新增
 router.post('/checkin', (req, res) => {
   const { nickname, dept, openid, avatar } = req.body || {};
   const game = getData();
   const token = req.userToken;
   const name = (nickname || '').trim();
-
-  const existing =
-    (openid && game.signins.find((s) => s.openid === openid)) ||
-    (token && game.signins.find((s) => s.token === token)) ||
-    (name && game.signins.find((s) => s.name === name));
+  const existing = findExisting(game, { token, openid });
   if (existing) {
-    return res.json(ok({ name: existing.name, total: game.signins.length, already: true }));
+    const { record, updated } = upsertScanSignin(game, token, {
+      name: name || existing.name,
+      dept: dept !== undefined ? String(dept).trim() : existing.dept,
+      openid: openid || existing.openid,
+      avatar: avatar || existing.avatar,
+      source: existing.source || 'manual',
+    });
+    return res.json(ok(publicRecord(record, game.signins.length, { already: true, updated })));
   }
   if (!name) return res.json(fail('请输入姓名'));
 
@@ -86,7 +162,7 @@ router.post('/checkin', (req, res) => {
     avatar: avatar || '',
     source: openid ? 'wechat' : 'manual',
   });
-  res.json(ok({ name: record.name, total: game.signins.length }));
+  res.json(ok(publicRecord(record, game.signins.length)));
 });
 
 // 签到列表
