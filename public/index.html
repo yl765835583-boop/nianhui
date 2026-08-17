@@ -66,6 +66,32 @@
         font-size: 13px;
         line-height: 1.6;
       }
+      .share {
+        margin-top: 28px;
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px 18px;
+      }
+      .share img {
+        width: 148px;
+        height: 148px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 8px;
+      }
+      .share p {
+        color: #8892b0;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      .share code {
+        color: #ffd93d;
+        word-break: break-all;
+      }
       .note {
         margin-top: 24px;
         color: #6b7280;
@@ -110,9 +136,24 @@
           <p>检查后端是否在线。正常会返回 status: ok。</p>
         </a>
       </div>
+      <div class="share">
+        <img id="h5Qr" alt="手机端二维码" />
+        <p>
+          把这个链接发给同事，或让他们扫左边的码：<br />
+          <code id="shareUrl"></code>
+        </p>
+      </div>
       <p class="note">
-        微信扫码签到请用管理后台或大屏上的小程序码。本页只提供网页入口，不替代微信小程序发布。
+        微信扫码签到请用管理后台或大屏上的码。小程序未发布时会自动改成手机 H5
+        码，扫开即可留言、抽奖、签到。
       </p>
+      <script>
+        (function () {
+          var url = location.origin + '/mobile/';
+          document.getElementById('shareUrl').textContent = url;
+          document.getElementById('h5Qr').src = '/api/qrcode?url=' + encodeURIComponent(url);
+        })();
+      </script>
     </div>
   </body>
 </html>

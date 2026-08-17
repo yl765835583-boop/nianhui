@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const https = require('https');
+const QRCode = require('qrcode');
 const config = require('../config');
 const storage = require('../services/storage');
 const ws = require('../services/socket');
@@ -220,14 +221,20 @@ router.get('/miniapp-qrcode', async (req, res) => {
       const u = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=' + token;
       const r = https.request(
         u,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'nianhui-ai-toolkit',
+          },
+        },
         (resp) => {
           const chunks = [];
           resp.on('data', (c) => chunks.push(c));
           resp.on('end', () =>
             resolve({
               status: resp.statusCode,
-              type: resp.headers['content-type'],
+              type: resp.headers['content-type'] || '',
               buf: Buffer.concat(chunks),
             })
           );
@@ -238,17 +245,46 @@ router.get('/miniapp-qrcode', async (req, res) => {
       r.end();
     });
 
-    // 出错时微信返回 JSON，成功时返回图片二进制
-    if (result.type && result.type.includes('application/json')) {
-      const err = JSON.parse(result.buf.toString('utf-8'));
-      return res.status(400).json({ code: -1, msg: '小程序码生成失败: ' + (err.errmsg || '') });
+    const looksLikeImage =
+      result.buf.length > 100 &&
+      !result.type.includes('application/json') &&
+      result.buf[0] !== 0x7b;
+    if (looksLikeImage) {
+      res.set('Content-Type', result.type || 'image/jpeg');
+      res.set('Cache-Control', 'public, max-age=3600');
+      return res.send(result.buf);
     }
-    res.set('Content-Type', result.type || 'image/jpeg');
-    res.set('Cache-Control', 'public, max-age=3600');
-    res.send(result.buf);
+
+    const errText = result.buf.length
+      ? result.buf.toString('utf-8').substring(0, 200)
+      : 'empty status ' + result.status;
+    console.warn('[小程序码] 微信未返回图片，回退 H5 码:', errText);
+    const fallbackUrl = getBaseUrl(req) + '/mobile/';
+    const svg = await QRCode.toString(fallbackUrl, {
+      type: 'svg',
+      margin: 2,
+      width: width,
+      color: { dark: '#1a1a2e', light: '#ffffff' },
+    });
+    res.set('Content-Type', 'image/svg+xml');
+    res.set('Cache-Control', 'no-store');
+    res.send(svg);
   } catch (err) {
-    console.error('[小程序码] 生成失败:', err);
-    res.status(400).json({ code: -1, msg: '小程序码生成失败: ' + err.message });
+    console.error('[小程序码] 生成失败，回退 H5 码:', err);
+    try {
+      const fallbackUrl = getBaseUrl(req) + '/mobile/';
+      const svg = await QRCode.toString(fallbackUrl, {
+        type: 'svg',
+        margin: 2,
+        width: 430,
+        color: { dark: '#1a1a2e', light: '#ffffff' },
+      });
+      res.set('Content-Type', 'image/svg+xml');
+      res.set('Cache-Control', 'no-store');
+      return res.send(svg);
+    } catch {
+      res.status(400).json({ code: -1, msg: '小程序码生成失败: ' + err.message });
+    }
   }
 });
 
