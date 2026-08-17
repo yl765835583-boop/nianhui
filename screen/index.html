@@ -703,7 +703,7 @@
       (function () {
         var img = document.querySelector('.qr-img');
         if (img)
-          img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/api/wechat/auth');
+          img.src = '/api/qrcode?url=' + encodeURIComponent(location.origin + '/api/signin/scan');
         var box = document.getElementById('qrBox'),
           dragging = false,
           sX,
@@ -805,6 +805,7 @@
         });
       }
       loadSignin();
+      setInterval(loadSignin, 3000);
 
       // ===== 留言墙 =====
       function loadWall() {

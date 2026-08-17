@@ -149,7 +149,7 @@
       </p>
       <script>
         (function () {
-          var url = location.origin + '/mobile/';
+          var url = location.origin + '/api/signin/scan';
           document.getElementById('shareUrl').textContent = url;
           document.getElementById('h5Qr').src = '/api/qrcode?url=' + encodeURIComponent(url);
         })();

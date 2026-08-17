@@ -1,4 +1,4 @@
-﻿const config = require('../config');
+const config = require('../config');
 const { readJSON, writeJSON } = require('../utils/helpers');
 const path = require('path');
 
@@ -24,6 +24,7 @@ function cleanup(usage) {
 }
 
 module.exports = function (req, res, next) {
+  if (req.method === 'GET') return next();
   const token = req.userToken;
   const today = new Date().toISOString().slice(0, 10);
   const usage = readJSON(usageFile, {});

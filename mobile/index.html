@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -370,32 +370,13 @@
 
     <script>
       const API = '';
-      // 微信扫码签到自动检测
-      (function () {
-        var q = new URLSearchParams(location.search);
-        if (q.get('signed') === '1') {
-          var name = q.get('name') || '微信用户';
-          var openid = q.get('openid') || '';
-          var avatar = q.get('avatar') || '';
-          gSigninDone = true;
-          gSigninName = name;
-          gSigninWxAvatar = avatar;
-          gSigninOpenid = openid;
-          gSigninSource = 'wechat';
-          if (window.history && window.history.replaceState) {
-            window.history.replaceState({}, '', location.pathname);
-          }
-          setTimeout(function () {
-            var nav = document.querySelector('.nav-item[data-p="signin"]');
-            if (nav) nav.click();
-          }, 300);
-        } else if (q.get('scan') === '1') {
-          setTimeout(function () {
-            var nav = document.querySelector('.nav-item[data-p="signin"]');
-            if (nav) nav.click();
-          }, 300);
-        }
-      })();
+      let gSigninName = '',
+        gSigninDept = '',
+        gSigninDone = false,
+        gSigninWxAvatar = '',
+        gSigninOpenid = '',
+        gSigninSource = '',
+        gSigninTotal = '';
       async function get(p) {
         const r = await fetch(API + '/api' + p, {
           headers: { 'X-User-Token': localStorage.getItem('token') || '' },
@@ -1115,12 +1096,40 @@
       }
 
       // ===== 签到 =====
-      let gSigninName = '',
-        gSigninDept = '',
-        gSigninDone = false,
-        gSigninWxAvatar = '',
-        gSigninOpenid = '',
-        gSigninSource = '';
+      async function autoScanCheckin() {
+        try {
+          var res = await post('/signin/scan', {});
+          if (res && res.code === 0 && res.data) {
+            gSigninDone = true;
+            gSigninName = res.data.name || gSigninName || '来宾';
+            gSigninTotal = res.data.total || '';
+            gSigninSource = gSigninSource || 'scan';
+          }
+        } catch (e) {}
+        var nav = document.querySelector('.nav-item[data-p="signin"]');
+        if (nav) nav.click();
+      }
+      (function () {
+        var q = new URLSearchParams(location.search);
+        var fromWechat = /MicroMessenger/i.test(navigator.userAgent || '');
+        if (q.get('signed') === '1') {
+          gSigninDone = true;
+          gSigninName = q.get('name') || '微信用户';
+          gSigninWxAvatar = q.get('avatar') || '';
+          gSigninOpenid = q.get('openid') || '';
+          gSigninSource = gSigninOpenid ? 'wechat' : 'scan';
+          gSigninTotal = q.get('total') || '';
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', location.pathname);
+          }
+          setTimeout(function () {
+            var nav = document.querySelector('.nav-item[data-p="signin"]');
+            if (nav) nav.click();
+          }, 300);
+        } else if (q.get('scan') === '1' || fromWechat) {
+          autoScanCheckin();
+        }
+      })();
       function renderSignin() {
         if (gSigninDone) {
           var avatarHtml = '';
@@ -1139,7 +1148,9 @@
             avatarHtml +
             '<p style="color:#8892b0">' +
             esc(gSigninName) +
-            ' 已上大屏</p>' +
+            ' 已上大屏' +
+            (gSigninTotal ? '，当前 ' + esc(gSigninTotal) + ' 人' : '') +
+            '</p>' +
             sourceTag +
             '<button class="btn btn-p" style="margin-top:16px" onclick="gSigninDone=false;renderSignin()">再次签到</button></div>';
           return;
