@@ -182,4 +182,74 @@ router.get('/jssdk-sign', (req, res) => {
   );
 });
 
+// ==================== 小程序码（wx.getUnlimitedQRCode）====================
+let miniToken = { token: '', expiresAt: 0 };
+
+async function getMiniAccessToken() {
+  const { appId, secret } = config.miniapp || {};
+  if (!appId || !secret) {
+    throw new Error('未配置小程序 AppID/Secret（MINIAPP_APPID/MINIAPP_SECRET）');
+  }
+  if (miniToken.token && Date.now() < miniToken.expiresAt) return miniToken.token;
+
+  const url =
+    'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' +
+    appId +
+    '&secret=' +
+    secret;
+  const data = await httpGet(url);
+  if (!data.access_token) {
+    throw new Error('获取小程序 access_token 失败: ' + (data.errmsg || JSON.stringify(data)));
+  }
+  miniToken = { token: data.access_token, expiresAt: Date.now() + (data.expires_in - 300) * 1000 };
+  return miniToken.token;
+}
+
+// 生成小程序码：GET /api/wechat/miniapp-qrcode?page=pages/signin/signin&scene=xxx
+router.get('/miniapp-qrcode', async (req, res) => {
+  try {
+    const token = await getMiniAccessToken();
+    const page = (req.query.page || 'pages/index/index').replace(/^\//, '');
+    const scene = (req.query.scene || '').substring(0, 32);
+    const envVersion = req.query.env || 'release';
+    const width = Math.min(Math.max(parseInt(req.query.width || '430', 10) || 430, 280), 1280);
+
+    const body = JSON.stringify({ scene, page, check_path: false, env_version: envVersion, width });
+
+    const result = await new Promise((resolve, reject) => {
+      const u = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=' + token;
+      const r = https.request(
+        u,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        (resp) => {
+          const chunks = [];
+          resp.on('data', (c) => chunks.push(c));
+          resp.on('end', () =>
+            resolve({
+              status: resp.statusCode,
+              type: resp.headers['content-type'],
+              buf: Buffer.concat(chunks),
+            })
+          );
+        }
+      );
+      r.on('error', reject);
+      r.write(body);
+      r.end();
+    });
+
+    // 出错时微信返回 JSON，成功时返回图片二进制
+    if (result.type && result.type.includes('application/json')) {
+      const err = JSON.parse(result.buf.toString('utf-8'));
+      return res.status(400).json({ code: -1, msg: '小程序码生成失败: ' + (err.errmsg || '') });
+    }
+    res.set('Content-Type', result.type || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.send(result.buf);
+  } catch (err) {
+    console.error('[小程序码] 生成失败:', err);
+    res.status(400).json({ code: -1, msg: '小程序码生成失败: ' + err.message });
+  }
+});
+
 module.exports = router;

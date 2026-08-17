@@ -1,4 +1,4 @@
-﻿const app = getApp();
+const app = getApp();
 
 function request(method, path, data) {
   return new Promise((resolve, reject) => {
@@ -45,6 +45,9 @@ module.exports = {
   sendMessage: (data) => request('POST', '/wall/send', data),
   getMessages: () => request('GET', '/wall/list'),
   likeMessage: (id) => request('POST', '/wall/like/' + id),
+
+  // 签到
+  signin: (data) => request('POST', '/signin/checkin', data),
 
   // 抽奖
   getLotteryState: () => request('GET', '/lottery/state'),

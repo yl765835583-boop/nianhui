@@ -1,11 +1,12 @@
-﻿{
+{
   "pages": [
     "pages/index/index",
     "pages/wenan/wenan",
     "pages/avatar/avatar",
     "pages/wall/wall",
     "pages/lottery/lottery",
-    "pages/game/game"
+    "pages/game/game",
+    "pages/signin/signin"
   ],
   "window": {
     "navigationBarBackgroundColor": "#1a1a2e",

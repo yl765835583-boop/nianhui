@@ -1,4 +1,4 @@
-﻿Page({
+Page({
   goWenan() {
     wx.navigateTo({ url: '/pages/wenan/wenan' });
   },
@@ -13,5 +13,8 @@
   },
   goGame() {
     wx.navigateTo({ url: '/pages/game/game' });
+  },
+  goSignin() {
+    wx.navigateTo({ url: '/pages/signin/signin' });
   },
 });

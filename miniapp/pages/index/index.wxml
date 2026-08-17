@@ -1,10 +1,15 @@
-﻿<view class="container">
+<view class="container">
   <view class="hero">
     <text class="hero-title">🎉 年会 AI 欢乐工具箱</text>
     <text class="hero-desc">文稿创作 · 形象名片 · 现场互动 · 暖场游戏</text>
   </view>
 
   <view class="module-grid">
+    <view class="module-card" bindtap="goSignin">
+      <text class="module-icon">✅</text>
+      <text class="module-title">扫码签到</text>
+      <text class="module-desc">签到上大屏</text>
+    </view>
     <view class="module-card" bindtap="goWenan">
       <text class="module-icon">✍️</text>
       <text class="module-title">文稿创作</text>

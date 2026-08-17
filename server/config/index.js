@@ -29,6 +29,12 @@ module.exports = {
     oauthScope: K('WECHAT_SCOPE') || 'snsapi_base',
   },
 
+  // 微信小程序（生成小程序码；AppID/Secret 通常与公众号不同）
+  miniapp: {
+    appId: K('MINIAPP_APPID') || K('WECHAT_APPID'),
+    secret: K('MINIAPP_SECRET') || K('WECHAT_APPSECRET'),
+  },
+
   ai: {
     // ===== 文本 =====
     text: {

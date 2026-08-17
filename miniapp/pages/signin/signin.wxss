@@ -1,0 +1,19 @@
+.hero {
+  text-align: center;
+  padding: 60rpx 20rpx 40rpx;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-radius: 24rpx;
+  margin-bottom: 30rpx;
+}
+.hero-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #ffd93d;
+  margin-bottom: 12rpx;
+}
+.hero-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #8892b0;
+}
