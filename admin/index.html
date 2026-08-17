@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -65,6 +65,64 @@
               >/screen/index.html</a
             >
           </p>
+        </div>
+        <div class="card">
+          <h3>📲 给别人用的入口</h3>
+          <p style="color: #6b7280; margin-bottom: 12px">
+            把下面的小程序码发给同事扫，或投到签到大屏上。开发期选「开发版」，正式发布后选「正式版」。
+          </p>
+          <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start">
+            <div style="text-align: center">
+              <img
+                id="adminMiniQr"
+                src="/api/wechat/miniapp-qrcode?page=pages/signin/signin&env=release"
+                alt="小程序签到码"
+                style="
+                  width: 200px;
+                  height: 200px;
+                  background: #fff;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 12px;
+                  padding: 8px;
+                "
+              />
+              <p style="margin-top: 8px; font-size: 13px; color: #6b7280">扫码打开小程序签到</p>
+              <select
+                id="miniQrEnv"
+                onchange="refreshMiniQr()"
+                style="
+                  margin-top: 8px;
+                  padding: 6px 10px;
+                  border-radius: 8px;
+                  border: 1px solid #ddd;
+                "
+              >
+                <option value="release">正式版</option>
+                <option value="trial">体验版</option>
+                <option value="develop">开发版</option>
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 240px; font-size: 14px; line-height: 1.8">
+              <p>
+                <strong>手机 H5：</strong
+                ><a id="linkMobile" href="/mobile/" target="_blank">/mobile/</a>
+              </p>
+              <p>
+                <strong>签到大屏：</strong
+                ><a href="/screen/index.html" target="_blank">/screen/index.html</a>
+              </p>
+              <p>
+                <strong>小程序码地址：</strong><br /><code
+                  id="miniQrUrl"
+                  style="word-break: break-all"
+                  >/api/wechat/miniapp-qrcode?page=pages/signin/signin&amp;env=release</code
+                >
+              </p>
+              <button class="btn btn-primary" style="margin-top: 8px" onclick="copyMiniQrUrl()">
+                复制小程序码链接
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -568,8 +626,29 @@
         return d.innerHTML;
       }
 
+      function miniQrSrc(env) {
+        return '/api/wechat/miniapp-qrcode?page=pages/signin/signin&env=' + (env || 'release');
+      }
+      function refreshMiniQr() {
+        const env = document.getElementById('miniQrEnv').value;
+        document.getElementById('adminMiniQr').src = miniQrSrc(env);
+        document.getElementById('miniQrUrl').textContent = miniQrSrc(env);
+      }
+      function copyMiniQrUrl() {
+        const url = location.origin + document.getElementById('miniQrUrl').textContent;
+        navigator.clipboard.writeText(url).then(
+          function () {
+            toast('已复制');
+          },
+          function () {
+            toast('复制失败', false);
+          }
+        );
+      }
+
       // 初始化
       loadOverview();
+      document.getElementById('linkMobile').href = '/mobile/';
 
       async function startRedpacket() {
         var count = parseInt(document.getElementById('rpCount').value) || 20;
